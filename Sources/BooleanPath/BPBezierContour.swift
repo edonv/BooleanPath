@@ -30,7 +30,7 @@ class BPBezierContour {
     fileprivate var _bounds: CGRect
     fileprivate var _boundingRect: CGRect
     fileprivate var _inside: BPContourInside
-    fileprivate var    _bezPathCache: NSBezierPath?
+    fileprivate var _bezPathCache: NSBezierPath?
     
     var inside: BPContourInside {
         get {

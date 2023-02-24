@@ -1,5 +1,5 @@
 # BooleanPath for macOS
-Add boolean operations to `Cocoa`'s `NSBezierPath`, `UIKit`'s' `UIBezierPath`, and `SwiftUI`'s' `Path`.
+Add boolean operations to `Cocoa`'s `NSBezierPath`, `UIKit`'s `UIBezierPath`, and `SwiftUI`'s `Path`.
 
 ## About BooleanPath
 This is a rework and update of [BooleanPath](https://github.com/Kyome22/BooleanPath) written by Kyome22, which is a rewrite of [VectorBoolean](https://github.com/lrtitze/Swift-VectorBoolean) written by Leslie Titze.  

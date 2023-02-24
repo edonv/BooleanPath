@@ -12,7 +12,7 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
+import CoreGraphics
 
 class BPEdgeCrossing {
     fileprivate var _intersection: BPBezierIntersection

@@ -16,13 +16,13 @@ import CoreGraphics
 
 public class BPBezierIntersectRange {
     var _curve1: BPBezierCurve
-    var _parameterRange1: BPRange
+    var _parameterRange1: ClosedRange<Double>
     var _curve1LeftBezier: BPBezierCurve?
     var _curve1MiddleBezier: BPBezierCurve?
     var _curve1RightBezier: BPBezierCurve?
     
     var _curve2: BPBezierCurve
-    var _parameterRange2: BPRange
+    var _parameterRange2: ClosedRange<Double>
     var _curve2LeftBezier: BPBezierCurve?
     var _curve2MiddleBezier: BPBezierCurve?
     var _curve2RightBezier: BPBezierCurve?
@@ -36,7 +36,7 @@ public class BPBezierIntersectRange {
         return _curve1
     }
     
-    var parameterRange1: BPRange {
+    var parameterRange1: ClosedRange<Double> {
         return _parameterRange1
     }
     
@@ -44,7 +44,7 @@ public class BPBezierIntersectRange {
         return _curve2
     }
     
-    var parameterRange2: BPRange {
+    var parameterRange2: ClosedRange<Double> {
         return _parameterRange2
     }
     
@@ -52,7 +52,7 @@ public class BPBezierIntersectRange {
         return _reversed
     }
     
-    init(curve1: BPBezierCurve, parameterRange1: BPRange, curve2: BPBezierCurve, parameterRange2: BPRange, reversed: Bool) {
+    init(curve1: BPBezierCurve, parameterRange1: ClosedRange<Double>, curve2: BPBezierCurve, parameterRange2: ClosedRange<Double>, reversed: Bool) {
         _curve1 = curve1
         _parameterRange1 = parameterRange1
         _curve2 = curve2
@@ -91,33 +91,33 @@ public class BPBezierIntersectRange {
     }
     
     var isAtStartOfCurve1: Bool {
-        return BPAreValuesCloseWithOptions(_parameterRange1.minimum, value2: 0.0, threshold: BPParameterCloseThreshold)
+        return ProximityMath.areValuesClose(_parameterRange1.lowerBound, value2: 0.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
     var isAtStopOfCurve1: Bool {
-        return BPAreValuesCloseWithOptions(_parameterRange1.maximum, value2: 1.0, threshold: BPParameterCloseThreshold)
+        return ProximityMath.areValuesClose(_parameterRange1.upperBound, value2: 1.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
     var isAtStartOfCurve2: Bool {
-        return BPAreValuesCloseWithOptions(_parameterRange2.minimum, value2: 0.0, threshold: BPParameterCloseThreshold)
+        return ProximityMath.areValuesClose(_parameterRange2.lowerBound, value2: 0.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
     var isAtStopOfCurve2: Bool {
-        return BPAreValuesCloseWithOptions(_parameterRange2.maximum, value2: 1.0, threshold: BPParameterCloseThreshold)
+        return ProximityMath.areValuesClose(_parameterRange2.upperBound, value2: 1.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
     var middleIntersection: BPBezierIntersection {
         return BPBezierIntersection (
             curve1: _curve1,
-            param1: (_parameterRange1.minimum + _parameterRange1.maximum) / 2.0,
+            param1: (_parameterRange1.lowerBound + _parameterRange1.upperBound) / 2.0,
             curve2: _curve2,
-            param2: (_parameterRange2.minimum + _parameterRange2.maximum) / 2.0
+            param2: (_parameterRange2.lowerBound + _parameterRange2.upperBound) / 2.0
         )
     }
     
     func merge(_ other: BPBezierIntersectRange) {
-        _parameterRange1 = BPRangeUnion(_parameterRange1, range2: other._parameterRange1);
-        _parameterRange2 = BPRangeUnion(_parameterRange2, range2: other._parameterRange2);
+        _parameterRange1 = RangeMath.union(_parameterRange1, range2: other._parameterRange1);
+        _parameterRange2 = RangeMath.union(_parameterRange2, range2: other._parameterRange2);
         
         clearCache()
     }

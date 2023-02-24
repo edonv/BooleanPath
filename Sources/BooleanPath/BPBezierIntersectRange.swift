@@ -12,7 +12,7 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
+import CoreGraphics
 
 public class BPBezierIntersectRange {
     var _curve1: BPBezierCurve

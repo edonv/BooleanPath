@@ -67,15 +67,15 @@ public class BPBezierIntersection {
         computeCurve1()
         computeCurve2()
         
-        let curve1LeftTangent = BPNormalizePoint(BPSubtractPoint(_curve1LeftBezier!.controlPoint2, point2: _curve1LeftBezier!.endPoint2))
-        let curve1RightTangent = BPNormalizePoint(BPSubtractPoint(_curve1RightBezier!.controlPoint1, point2: _curve1RightBezier!.endPoint1))
-        let curve2LeftTangent = BPNormalizePoint(BPSubtractPoint(_curve2LeftBezier!.controlPoint2, point2: _curve2LeftBezier!.endPoint2))
-        let curve2RightTangent = BPNormalizePoint(BPSubtractPoint(_curve2RightBezier!.controlPoint1, point2: _curve2RightBezier!.endPoint1))
+        let curve1LeftTangent  = PointMath.normalizePoint(PointMath.subtractPoint(_curve1LeftBezier!.controlPoint2, point2: _curve1LeftBezier!.endPoint2))
+        let curve1RightTangent = PointMath.normalizePoint(PointMath.subtractPoint(_curve1RightBezier!.controlPoint1, point2: _curve1RightBezier!.endPoint1))
+        let curve2LeftTangent  = PointMath.normalizePoint(PointMath.subtractPoint(_curve2LeftBezier!.controlPoint2, point2: _curve2LeftBezier!.endPoint2))
+        let curve2RightTangent = PointMath.normalizePoint(PointMath.subtractPoint(_curve2RightBezier!.controlPoint1, point2: _curve2RightBezier!.endPoint1))
         
-        return BPArePointsCloseWithOptions(curve1LeftTangent, point2: curve2LeftTangent, threshold: BPPointCloseThreshold)
-            || BPArePointsCloseWithOptions(curve1LeftTangent, point2: curve2RightTangent, threshold: BPPointCloseThreshold)
-            || BPArePointsCloseWithOptions(curve1RightTangent, point2: curve2LeftTangent, threshold: BPPointCloseThreshold)
-            || BPArePointsCloseWithOptions(curve1RightTangent, point2: curve2RightTangent, threshold: BPPointCloseThreshold)
+        return ProximityMath.arePointsClose(curve1LeftTangent, point2: curve2LeftTangent, threshold: BPBezierIntersection.pointCloseThreshold)
+        || ProximityMath.arePointsClose(curve1LeftTangent, point2: curve2RightTangent, threshold: BPBezierIntersection.pointCloseThreshold)
+        || ProximityMath.arePointsClose(curve1RightTangent, point2: curve2LeftTangent, threshold: BPBezierIntersection.pointCloseThreshold)
+        || ProximityMath.arePointsClose(curve1RightTangent, point2: curve2RightTangent, threshold: BPBezierIntersection.pointCloseThreshold)
     }
     
     var curve1LeftBezier: BPBezierCurve {
@@ -99,11 +99,11 @@ public class BPBezierIntersection {
     }
     
     var isAtStartOfCurve1: Bool {
-        return BPAreValuesCloseWithOptions(_parameter1, value2: 0.0, threshold: BPParameterCloseThreshold) || _curve1.isPoint
+        return ProximityMath.areValuesClose(_parameter1, value2: 0.0, threshold: BPBezierIntersection.parameterCloseThreshold) || _curve1.isPoint
     }
     
     var isAtStopOfCurve1: Bool {
-        return BPAreValuesCloseWithOptions(_parameter1, value2: 1.0, threshold: BPParameterCloseThreshold) || _curve1.isPoint
+        return ProximityMath.areValuesClose(_parameter1, value2: 1.0, threshold: BPBezierIntersection.parameterCloseThreshold) || _curve1.isPoint
     }
     
     var isAtEndPointOfCurve1: Bool {
@@ -111,11 +111,11 @@ public class BPBezierIntersection {
     }
     
     var isAtStartOfCurve2: Bool {
-        return BPAreValuesCloseWithOptions(_parameter2, value2: 0.0, threshold: BPParameterCloseThreshold) || _curve2.isPoint
+        return ProximityMath.areValuesClose(_parameter2, value2: 0.0, threshold: BPBezierIntersection.parameterCloseThreshold) || _curve2.isPoint
     }
     
     var isAtStopOfCurve2: Bool {
-        return BPAreValuesCloseWithOptions(_parameter2, value2: 1.0, threshold: BPParameterCloseThreshold) || _curve2.isPoint
+        return ProximityMath.areValuesClose(_parameter2, value2: 1.0, threshold: BPBezierIntersection.parameterCloseThreshold) || _curve2.isPoint
     }
     
     var isAtEndPointOfCurve2: Bool {

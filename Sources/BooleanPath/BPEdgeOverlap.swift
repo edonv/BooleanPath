@@ -12,9 +12,9 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-let BPOverlapThreshold = isRunningOn64BitDevice ? 1e-2 : 1e-1
-
 class BPEdgeOverlap {
+    private static let threshold = 1e-2
+    
     var edge1: BPBezierCurve
     var edge2: BPBezierCurve
     fileprivate var _range: BPBezierIntersectRange

@@ -165,11 +165,11 @@ public extension NSBezierPath {
     }
     
     static func triangleAtPoint(_ point: CGPoint, direction tangent: CGPoint) -> NSBezierPath {
-        let endPoint = BPAddPoint(point, point2: BPScalePoint(tangent, scale: BPDebugPointSize * 1.5))
-        let normal1 = BPLineNormal(point, lineEnd: endPoint)
+        let endPoint = PointMath.addPoint(point, point2: PointMath.scalePoint(tangent, scale: BPDebugPointSize * 1.5))
+        let normal1 = PointMath.lineNormal(point, lineEnd: endPoint)
         let normal2 = CGPoint(x: -normal1.x, y: -normal1.y)
-        let basePoint1 = BPAddPoint(point, point2: BPScalePoint(normal1, scale: BPDebugPointSize * 0.5))
-        let basePoint2 = BPAddPoint(point, point2: BPScalePoint(normal2, scale: BPDebugPointSize * 0.5))
+        let basePoint1 = PointMath.addPoint(point, point2: PointMath.scalePoint(normal1, scale: BPDebugPointSize * 0.5))
+        let basePoint2 = PointMath.addPoint(point, point2: PointMath.scalePoint(normal2, scale: BPDebugPointSize * 0.5))
         let path = NSBezierPath()
         path.move(to: basePoint1)
         path.line(to: endPoint)

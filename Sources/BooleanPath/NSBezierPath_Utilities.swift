@@ -12,12 +12,6 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-
-public struct NSBezierElement {
-    var kind: CGPathElementType
-    var point: CGPoint
-    var controlPoints: [CGPoint]
-}
 import SwiftUI
 
 let BPDebugPointSize: CGFloat = 10.0

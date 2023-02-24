@@ -30,22 +30,26 @@ class BPEdgeOverlap {
     }
     
     func fitsBefore(_ nextOverlap: BPEdgeOverlap) -> Bool {
-        if BPAreValuesCloseWithOptions(range.parameterRange1.maximum, value2: 1.0, threshold: BPOverlapThreshold) {
+        if ProximityMath.areValuesClose(range.parameterRange1.upperBound, value2: 1.0, threshold: BPEdgeOverlap.threshold) {
             let nextEdge = edge1.next
-            return nextOverlap.edge1 == nextEdge && BPAreValuesCloseWithOptions(nextOverlap.range.parameterRange1.minimum, value2: 0.0, threshold: BPOverlapThreshold)
+            return nextOverlap.edge1 == nextEdge
+                && ProximityMath.areValuesClose(nextOverlap.range.parameterRange1.lowerBound, value2: 0.0, threshold: BPEdgeOverlap.threshold)
         }
         
-        return nextOverlap.edge1 == edge1 && BPAreValuesCloseWithOptions(nextOverlap.range.parameterRange1.minimum, value2: range.parameterRange1.maximum, threshold: BPOverlapThreshold)
+        return nextOverlap.edge1 == edge1
+            && ProximityMath.areValuesClose(nextOverlap.range.parameterRange1.lowerBound, value2: range.parameterRange1.upperBound, threshold: BPEdgeOverlap.threshold)
     }
     
     func fitsAfter(_ previousOverlap: BPEdgeOverlap) -> Bool {
-        if BPAreValuesCloseWithOptions(range.parameterRange1.minimum, value2: 0.0, threshold: BPOverlapThreshold) {
+        if ProximityMath.areValuesClose(range.parameterRange1.lowerBound, value2: 0.0, threshold: BPEdgeOverlap.threshold) {
             let previousEdge = edge1.previous
             
-            return previousOverlap.edge1 == previousEdge && BPAreValuesCloseWithOptions(previousOverlap.range.parameterRange1.maximum, value2: 1.0, threshold: BPOverlapThreshold)
+            return previousOverlap.edge1 == previousEdge
+                && ProximityMath.areValuesClose(previousOverlap.range.parameterRange1.upperBound, value2: 1.0, threshold: BPEdgeOverlap.threshold)
         }
         
-        return previousOverlap.edge1 == edge1 && BPAreValuesCloseWithOptions(previousOverlap.range.parameterRange1.maximum, value2: range.parameterRange1.minimum, threshold: BPOverlapThreshold)
+        return previousOverlap.edge1 == edge1
+            && ProximityMath.areValuesClose(previousOverlap.range.parameterRange1.upperBound, value2: range.parameterRange1.lowerBound, threshold: BPEdgeOverlap.threshold)
     }
     
     func addMiddleCrossing() {
@@ -72,15 +76,19 @@ class BPEdgeOverlap {
             return true
         }
         
-        var parameterRange: BPRange
+        var parameterRange: ClosedRange<Double>
         if edge == edge1 {
             parameterRange = _range.parameterRange1
         } else {
             parameterRange = _range.parameterRange2
         }
         
-        let inLeftSide = extendsBeforeStart ? parameter >= 0.0 : parameter > parameterRange.minimum
-        let inRightSide = extendsAfterEnd ? parameter <= 1.0 : parameter < parameterRange.maximum
+        let inLeftSide = extendsBeforeStart
+            ? parameter >= 0.0
+            : parameter > parameterRange.lowerBound
+        let inRightSide = extendsAfterEnd
+            ? parameter <= 1.0
+            : parameter < parameterRange.upperBound
         
         return inLeftSide && inRightSide
     }

@@ -12,12 +12,12 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-
-let BPPointCloseThreshold = isRunningOn64BitDevice ? 1e-7 : 1e-3
-let BPParameterCloseThreshold = isRunningOn64BitDevice ? 1e-4 : 1e-2
 import CoreGraphics
 
 public class BPBezierIntersection {
+    static let pointCloseThreshold = 1e-7
+    static let parameterCloseThreshold = 1e-4
+    
     fileprivate var _location: CGPoint?
     fileprivate var _curve1: BPBezierCurve
     fileprivate var _parameter1: Double

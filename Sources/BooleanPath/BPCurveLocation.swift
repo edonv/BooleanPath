@@ -12,7 +12,7 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
+import Foundation
 
 class BPCurveLocation {
     var graph: BPBezierGraph?

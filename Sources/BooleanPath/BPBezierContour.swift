@@ -97,7 +97,7 @@ class BPBezierContour {
         } else if endCrossing == nil, let startCrossing = startCrossing {
             curve = startCrossing.rightCurve
         } else if let startCrossing = startCrossing, let endCrossing = endCrossing {
-            curve = startCrossing.curve?.subcurveWithRange(BPRange(minimum: startCrossing.parameter, maximum: endCrossing.parameter))
+            curve = startCrossing.curve?.subcurveWithRange(startCrossing.parameter...endCrossing.parameter)
         }
         if let curve = curve {
             addCurve(curve)
@@ -118,7 +118,7 @@ class BPBezierContour {
         } else if endCrossing == nil, let startCrossing = startCrossing {
             curve = startCrossing.rightCurve
         } else if let startCrossing = startCrossing, let endCrossing = endCrossing {
-            curve = startCrossing.curve?.subcurveWithRange(BPRange(minimum: startCrossing.parameter, maximum: endCrossing.parameter))
+            curve = startCrossing.curve?.subcurveWithRange(startCrossing.parameter...endCrossing.parameter)
         }
         
         if let curve = curve {

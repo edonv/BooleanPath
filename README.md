@@ -1,20 +1,13 @@
 # BooleanPath for macOS
-Add boolean operations to NSBezierPath like the pathfinder of Adobe Illustrator.
+Add boolean operations to `Cocoa`'s `NSBezierPath`, `UIKit`'s' `UIBezierPath`, and `SwiftUI`'s' `Path`.
 
 ## About BooleanPath
-This is a rewrite of [VectorBoolean](https://github.com/lrtitze/Swift-VectorBoolean) written by Leslie Titze's.  
-BooleanPath is written by Swift for macOS.
+This is a rework and update of [BooleanPath](https://github.com/Kyome22/BooleanPath) written by Kyome22, which is a rewrite of [VectorBoolean](https://github.com/lrtitze/Swift-VectorBoolean) written by Leslie Titze.  
+BooleanPath is written by Swift for macOS and iOS.
 
 ## Installation
-### CocoaPods
-```
-pod 'BooleanPath'
-```
-
-### Carthage
-```
-github "Kyome22/BooleanPath"
-```
+### Swift Package Manager
+*(need to add instructions for Swift Package Manager)*
 
 ## Demo
 
@@ -23,6 +16,7 @@ The sample code is in the project.
 ![sample](https://github.com/Kyome22/BooleanPath/blob/master/images/sample.png)
 
 ## Usage (Example)
+*(needs to be updated from original example)*
 
 ```swift
 import Cocoa

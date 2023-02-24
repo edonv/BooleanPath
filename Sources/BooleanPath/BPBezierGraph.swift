@@ -12,7 +12,16 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
+#if canImport(Cocoa)
 import Cocoa
+#endif
+
+#if canImport(UIKit)
+import UIKit
+#endif
+
+import SwiftUI
+import CoreGraphics
 
 class BPBezierGraph {
     fileprivate var _bounds: CGRect
@@ -22,65 +31,98 @@ class BPBezierGraph {
         return _contours
     }
     
-    init() {
+    private init(_ pathElements: [Path.Element]?) {
         _contours = []
-        _bounds = CGRect.null
+        _bounds = .null
+        
+        if let pathElements {
+            initWithPathElements(pathElements)
+        }
     }
     
-    init(path: NSBezierPath) {
-        _contours = []
-        _bounds = CGRect.null
-        _ = initWithBezierPath(path)
+    convenience init() {
+        self.init(nil)
     }
     
-    class func bezierGraphWithBezierPath(_ path: NSBezierPath!) -> AnyObject {
-        return BPBezierGraph().initWithBezierPath(path)
+    // MARK: - NSBezierPath Init
+    
+    #if canImport(Cocoa)
+    convenience init(path: NSBezierPath) {
+        self.init(path.elements)
+    }
+    #endif
+    
+    // MARK: - UIBezierPath Init
+    
+    #if canImport(UIKit)
+    convenience init(path: UIBezierPath) {
+        self.init(path.elements)
+    }
+    #endif
+    
+    // MARK: - SwiftUI Path Init
+    
+    convenience init(path: Path) {
+        self.init(path.elements)
     }
     
-    func initWithBezierPath(_ path: NSBezierPath!) -> BPBezierGraph {
+    func initWithPathElements(_ elements: [Path.Element]) {
         var lastPoint: CGPoint = CGPoint.zero
         var wasClosed = false
         
         var contour: BPBezierContour?
-        let bezier = LRTBezierPathWrapper(path)
         
-        for element in bezier.elements {
+        for element in elements {
             switch element {
-            case let .move(toPt):
-                if !wasClosed && contour != nil {
-                    contour?.close()
+            case let .move(to):
+                if !wasClosed, let contour {
+                    contour.close()
                 }
+                
                 wasClosed = false
                 contour = BPBezierContour()
                 addContour(contour!)
-                lastPoint = toPt
-            case .line(let toPt):
-                if !toPt.equalTo(lastPoint) {
-                    if let contour = contour {
-                        contour.addCurve(BPBezierCurve.bezierCurveWithLineStartPoint(lastPoint, endPoint:toPt))
+                lastPoint = to
+                
+            case .line(let to):
+                if !to.equalTo(lastPoint) {
+                    if let contour {
+                        contour.addCurve(BPBezierCurve.bezierCurveWithLineStartPoint(lastPoint, endPoint: to))
                     }
-                    lastPoint = toPt
-                }
-            case .quadCurve(let toPt, let via):
-                let allPointsEqual = toPt.equalTo(lastPoint)
-                    && toPt.equalTo(via)
-                if !allPointsEqual {
-                    let ⅔: CGFloat = 2.0 / 3.0
-                    let cp1 = BPAddPoint(lastPoint, point2: BPScalePoint(BPSubtractPoint(via, point2: lastPoint), scale: ⅔))
-                    let cp2 = BPAddPoint(toPt, point2: BPScalePoint(BPSubtractPoint(via, point2: toPt), scale: ⅔))
                     
-                    contour?.addCurve(BPBezierCurve(endPoint1: lastPoint, controlPoint1: cp1, controlPoint2: cp2, endPoint2: toPt))
-                    lastPoint = toPt
+                    lastPoint = to
                 }
-            case .cubicCurve(let toPt, let v1, let v2):
-                let allPointsEqual = toPt.equalTo(lastPoint)
-                    && toPt.equalTo(v1)
-                    && toPt.equalTo(v2)
+                
+            case .quadCurve(let to, let control):
+                let allPointsEqual = to.equalTo(lastPoint)
+                    && to.equalTo(control)
+                
                 if !allPointsEqual {
-                    contour?.addCurve(BPBezierCurve(endPoint1: lastPoint, controlPoint1: v1, controlPoint2: v2, endPoint2: toPt))
-                    lastPoint = toPt
+                    let twoThirds: CGFloat = 2.0 / 3.0
+                    let control1 = PointMath.addPoint(lastPoint, point2: PointMath.scalePoint(PointMath.subtractPoint(control, point2: lastPoint), scale: twoThirds))
+                    let control2 = PointMath.addPoint(to, point2: PointMath.scalePoint(PointMath.subtractPoint(control, point2: to), scale: twoThirds))
+                    
+                    contour?.addCurve(BPBezierCurve(endPoint1: lastPoint,
+                                                    controlPoint1: control1,
+                                                    controlPoint2: control2,
+                                                    endPoint2: to))
+                    lastPoint = to
                 }
-            case .close:
+                
+            case .curve(let to, let control1, let control2):
+                let allPointsEqual = to.equalTo(lastPoint)
+                    && to.equalTo(control1)
+                    && to.equalTo(control2)
+                
+                if !allPointsEqual {
+                    contour?.addCurve(BPBezierCurve(endPoint1: lastPoint,
+                                                    controlPoint1: control1,
+                                                    controlPoint2: control2,
+                                                    endPoint2: to))
+                    lastPoint = to
+                }
+                
+            case .closeSubpath:
                 if let contour = contour {
                     let edges = contour.edges
                     if edges.count > 0 {
@@ -93,11 +135,13 @@ class BPBezierGraph {
                         }
                     }
                 }
-                lastPoint = CGPoint.zero
+                
+                lastPoint = .zero
             }
         }
-        return self
     }
+    
+    // MARK: - Shared Functions
     
     func union(with graph: BPBezierGraph) -> BPBezierGraph {
         insertCrossingsWithBezierGraph(graph)
@@ -385,6 +429,9 @@ class BPBezierGraph {
         return allParts.subtract(with: intersectingParts)
     }
     
+    // MARK: - Computed NSBezierPath
+    
+    #if canImport(Cocoa)
     var bezierPath: NSBezierPath {
         let path = NSBezierPath()
         path.windingRule = NSBezierPath.WindingRule.evenOdd
@@ -408,6 +455,71 @@ class BPBezierGraph {
             }
         }
         return path
+    }
+    #endif
+    
+    // MARK: - Computed UIBezierPath
+    
+    #if canImport(UIKit)
+    var bezierPath: UIBezierPath {
+        let path = UIBezierPath()
+        path.usesEvenOddFillRule = true
+        
+        for contour in _contours {
+            var firstPoint = true
+            for edge in contour.edges {
+                if firstPoint {
+                    path.move(to: edge.endPoint1)
+                    firstPoint = false
+                }
+                
+                if edge.isStraightLine {
+                    path.addLine(to: edge.endPoint2)
+                } else {
+                    path.addCurve(to: edge.endPoint2,
+                                  controlPoint1: edge.controlPoint1,
+                                  controlPoint2: edge.controlPoint2)
+                }
+            }
+            if !path.isEmpty {
+                path.close()
+            }
+        }
+        return path
+    }
+    #endif
+    
+    // MARK: - Computed Path
+    
+    var path: Path {
+        var path = Path()
+        
+        for contour in _contours {
+            var firstPoint = true
+            for edge in contour.edges {
+                if firstPoint {
+                    path.move(to: edge.endPoint1)
+                    firstPoint = false
+                }
+                
+                if edge.isStraightLine {
+                    path.addLine(to: edge.endPoint2)
+                } else {
+                    path.addCurve(to: edge.endPoint2,
+                                  control1: edge.controlPoint1,
+                                  control2: edge.controlPoint2)
+                }
+            }
+            if !path.isEmpty {
+                path.closeSubpath()
+            }
+        }
+        return path
+    }
+    
+    var filledPath: some View {
+        path
+            .fill(style: .init(eoFill: true))
     }
     
     internal func insertCrossingsWithBezierGraph(_ other: BPBezierGraph) {
@@ -536,8 +648,8 @@ class BPBezierGraph {
                     if firstContour === secondContour {
                         continue
                     }
-                    if !BPLineBoundsMightOverlap(firstContour.boundingRect, bounds2: secondContour.boundingRect)
-                        || !BPLineBoundsMightOverlap(firstContour.bounds, bounds2: secondContour.bounds) {
+                    if !TangentMath.lineBoundsMightOverlap(firstContour.boundingRect, bounds2: secondContour.boundingRect)
+                        || !TangentMath.lineBoundsMightOverlap(firstContour.bounds, bounds2: secondContour.bounds) {
                         continue
                     }
                     for firstEdge in firstContour.edges {
@@ -640,12 +752,15 @@ class BPBezierGraph {
         }
     }
     
-    func debugPathForContainmentOfContour(_ testContour: BPBezierContour) -> NSBezierPath {
-        return debugPathForContainmentOfContour(testContour, transform: AffineTransform.identity)
-    }
+    // MARK: - Generic Path Debug
     
-    func debugPathForContainmentOfContour(_ testContour: BPBezierContour, transform: AffineTransform) -> NSBezierPath {
-        let path = NSBezierPath()
+    private func debugPath<P>(_ path: P,
+                              forContainmentOfContour testContour: BPBezierContour,
+                              getCurvePath: (BPBezierCurve) -> P,
+                              transformCurve: (inout P) -> Void,
+                                 appendCurve: (inout P, _ curvePath: P) -> Void,
+                                 setLineDash: (inout P) -> Void) -> P {
+        var pathTemp = path
         
         var intersectCount = 0
         for contour in self.contours {
@@ -701,35 +816,134 @@ class BPBezierGraph {
         let lineEndPoint = CGPoint(x: beyondX, y: testPoint.y);
         let testCurve = BPBezierCurve(startPoint: testPoint, endPoint: lineEndPoint)
         
-        let curvePath = testCurve.bezierPath
-        curvePath.transform(using: transform)
-        path.append(curvePath)
+        var curvePath = getCurvePath(testCurve)
+        transformCurve(&curvePath)
+        
+        appendCurve(&pathTemp, curvePath)
         
         if intersectCount.isOdd {
-            let dashes: [CGFloat] = [CGFloat(2), CGFloat(3)]
-            path.setLineDash(dashes, count: 2, phase: 0)
+            setLineDash(&pathTemp)
+        }
+        
+        return pathTemp
+    }
+    
+    func debugPath<P>(_ path: P,
+                      forJointsOfContour testContour: BPBezierContour,
+                      notStraightLine: (inout P, _ edge: BPBezierCurve) -> Void,
+                      appendRect: (inout P, _ point: CGPoint) -> Void) -> P {
+        var pathTemp = path
+        
+        for edge in testContour.edges {
+            if !edge.isStraightLine {
+                notStraightLine(&pathTemp, edge)
+            }
+            
+            appendRect(&pathTemp, edge.endPoint2)
         }
         
         return path
     }
     
-    func debugPathForJointsOfContour(_ testContour: BPBezierContour) -> NSBezierPath {
-        let path = NSBezierPath()
+    // MARK: - NSBezierPath Debug
+    
+    #if canImport(Cocoa)
+    func debugPath(forContainmentOfContour testContour: BPBezierContour,
+                   transform: AffineTransform = .identity) -> NSBezierPath {
         
-        for edge in testContour.edges {
-            if !edge.isStraightLine {
-                path.move(to: edge.endPoint1)
-                path.line(to: edge.controlPoint1)
-                path.append(NSBezierPath.smallCircleAtPoint(edge.controlPoint1))
-                path.move(to: edge.endPoint2)
-                path.line(to: edge.controlPoint2)
-                path.append(NSBezierPath.smallCircleAtPoint(edge.controlPoint2))
-            }
-            path.append(NSBezierPath.smallRectAtPoint(edge.endPoint2))
+        debugPath(NSBezierPath(),
+                  forContainmentOfContour: testContour) { testCurve in
+            testCurve.bezierPath
+        } transformCurve: { curvePath in
+            curvePath.transform(using: transform)
+        } appendCurve: { path, curvePath in
+            path.append(curvePath)
+        } setLineDash: { path in
+            let dashes: [CGFloat] = [2, 3]
+            path.setLineDash(dashes, count: 2, phase: 0)
         }
-        
-        return path
     }
+    
+    func debugPath(forJointsOfContour testContour: BPBezierContour) -> NSBezierPath {
+        debugPath(NSBezierPath(),
+                  forJointsOfContour: testContour) { path, edge in
+            path.move(to: edge.endPoint1)
+            path.line(to: edge.controlPoint1)
+            path.append(.smallCircleAtPoint(edge.controlPoint1))
+            path.move(to: edge.endPoint2)
+            path.line(to: edge.controlPoint2)
+            path.append(.smallCircleAtPoint(edge.controlPoint2))
+        } appendRect: { path, point in
+            path.append(.smallRectAtPoint(point))
+        }
+    }
+    #endif
+    
+    // MARK: - UIBezierPath Debug
+    
+    #if canImport(UIKit)
+    func debugPath(forContainmentOfContour testContour: BPBezierContour,
+                   transform: CGAffineTransform = .identity) -> UIBezierPath {
+        debugPath(UIBezierPath(),
+                  forContainmentOfContour: testContour) { testCurve in
+            testCurve.bezierPath
+        } transformCurve: { curvePath in
+            curvePath.apply(transform)
+        } appendCurve: { path, curvePath in
+            path.append(curvePath)
+        } setLineDash: { path in
+            let dashes: [CGFloat] = [2, 3]
+            path.setLineDash(dashes, count: 2, phase: 0)
+        }
+    }
+    
+    func debugPath(forJointsOfContour testContour: BPBezierContour) -> UIBezierPath {
+        debugPath(UIBezierPath(),
+                  forJointsOfContour: testContour) { path, edge in
+            path.move(to: edge.endPoint1)
+            path.addLine(to: edge.controlPoint1)
+            path.append(.smallCircleAtPoint(edge.controlPoint1))
+            path.move(to: edge.endPoint2)
+            path.addLine(to: edge.controlPoint2)
+            path.append(.smallCircleAtPoint(edge.controlPoint2))
+        } appendRect: { path, point in
+            path.append(.smallRectAtPoint(point))
+        }
+    }
+    #endif
+    
+    // MARK: - SwiftUI Path Debug
+    
+    func debugPath(forContainmentOfContour testContour: BPBezierContour,
+                   transform: CGAffineTransform = .identity) -> Path {
+        debugPath(Path(),
+                  forContainmentOfContour: testContour) { testCurve in
+            testCurve.path
+        } transformCurve: { curvePath in
+            curvePath = curvePath.applying(transform)
+        } appendCurve: { path, curvePath in
+            path.addPath(curvePath)
+        } setLineDash: { path in
+            let dashes: [CGFloat] = [2, 3]
+            path = path.strokedPath(.init(dash: dashes, dashPhase: 0))
+        }
+    }
+    
+    func debugPath(forJointsOfContour testContour: BPBezierContour) -> Path {
+        debugPath(Path(),
+                  forJointsOfContour: testContour) { path, edge in
+            path.move(to: edge.endPoint1)
+            path.addLine(to: edge.controlPoint1)
+            path.addPath(.smallCircleAtPoint(edge.controlPoint1))
+            path.move(to: edge.endPoint2)
+            path.addLine(to: edge.controlPoint2)
+            path.addPath(.smallCircleAtPoint(edge.controlPoint2))
+        } appendRect: { path, point in
+            path.addPath(.smallRectAtPoint(point))
+        }
+    }
+    
+    // MARK: - Misc fileprivate
     
     fileprivate func containsContour(_ testContour: BPBezierContour) -> Bool {
         let BPRayOverlap = CGFloat(10.0)

@@ -12,6 +12,7 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
+#if canImport(Cocoa)
 import Cocoa
 
 public extension NSBezierPath {
@@ -49,3 +50,4 @@ public extension NSBezierPath {
         return result
     }
 }
+#endif

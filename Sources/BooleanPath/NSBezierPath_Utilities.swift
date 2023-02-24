@@ -12,21 +12,48 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
 
 public struct NSBezierElement {
     var kind: CGPathElementType
     var point: CGPoint
     var controlPoints: [CGPoint]
 }
+import SwiftUI
 
 let BPDebugPointSize: CGFloat = 10.0
 let BPDebugSmallPointSize: CGFloat = 3.0
 
+#if canImport(Cocoa)
+import Cocoa
+
 public extension NSBezierPath {
+    var elements: [Path.Element] {
+        var points = [CGPoint](repeating: .zero, count: 3)
+        return (0..<self.elementCount).reduce(into: []) { partialResult, i in
+            let element: Path.Element
+            switch self.element(at: i, associatedPoints: &points) {
+            case .moveTo:
+                element = .move(to: CGPoint(x: points[0].x, y: points[0].y))
+            case .lineTo:
+                element = .line(to: CGPoint(x: points[0].x, y: points[0].y))
+            case .curveTo:
+                element = .curve(to: CGPoint(x: points[2].x, y: points[2].y),
+                                 control1: CGPoint(x: points[0].x, y: points[0].y),
+                                 control2: CGPoint(x: points[1].x, y: points[1].y))
+            case .closePath:
+                element = .closeSubpath
+            @unknown default:
+                element = .closeSubpath
+            }
+            
+            partialResult.append(element)
+        }
+    }
+    
     var cgPath: CGPath {
         let path: CGMutablePath = CGMutablePath()
         var points = [NSPoint](repeating: NSPoint.zero, count: 3)
+        
         for i in (0 ..< self.elementCount) {
             switch self.element(at: i, associatedPoints: &points) {
             case .moveTo:
@@ -39,27 +66,35 @@ public extension NSBezierPath {
                               control2: CGPoint(x: points[1].x, y: points[1].y))
             case .closePath:
                 path.closeSubpath()
+            @unknown default:
+                path.closeSubpath()
             }
         }
+        
         return path
     }
     
     var dividedPaths: [NSBezierPath] {
         var path: NSBezierPath?
         var paths = [NSBezierPath]()
-        var points = [NSPoint](repeating: NSPoint.zero, count: 3)
+        var points = [CGPoint](repeating: .zero, count: 3)
         for i in (0 ..< self.elementCount) {
             switch self.element(at: i, associatedPoints: &points) {
             case .moveTo:
                 path = NSBezierPath()
-                path?.move(to: NSPoint(x: points[0].x, y: points[0].y))
+                path?.move(to: CGPoint(x: points[0].x, y: points[0].y))
             case .lineTo:
-                path?.line(to: NSPoint(x: points[0].x, y: points[0].y))
+                path?.line(to: CGPoint(x: points[0].x, y: points[0].y))
             case .curveTo:
                 path?.curve(to: NSPoint(x: points[2].x, y: points[2].y),
                             controlPoint1: NSPoint(x: points[0].x, y: points[0].y),
                             controlPoint2: NSPoint(x: points[1].x, y: points[1].y))
             case .closePath:
+                if let path = path {
+                    paths.append(path)
+                }
+                path = nil
+            @unknown default:
                 if let path = path {
                     paths.append(path)
                 }
@@ -77,6 +112,28 @@ public extension NSBezierPath {
         self.flatness = path.flatness
     }
     
+    func callPath() {
+        var points = [NSPoint](repeating: NSPoint.zero, count: 3)
+        for i in (0 ..< self.elementCount) {
+            switch self.element(at: i, associatedPoints: &points) {
+            case .moveTo:
+                Swift.print("moveTo: (\(points[0].x), \(points[0].y))")
+            case .lineTo:
+                Swift.print("lineTo: (\(points[0].x), \(points[0].y))")
+            case .curveTo:
+                Swift.print("curveTo: (\(points[2].x), \(points[2].y)), (\(points[0].x), \(points[0].y)), (\(points[1].x), \(points[1].y))")
+            case .closePath:
+                Swift.print("close")
+            @unknown default:
+                Swift.print("close")
+            }
+        }
+    }
+}
+
+// MARK: - Static Func Inits for Debugging
+
+public extension NSBezierPath {
     static func circleAtPoint(_ point: CGPoint) -> NSBezierPath {
         let rect = CGRect(
             x: point.x - BPDebugPointSize * 0.5,
@@ -127,22 +184,7 @@ public extension NSBezierPath {
         path.close()
         return path
     }
-    
-    func callPath() {
-        var points = [NSPoint](repeating: NSPoint.zero, count: 3)
-        for i in (0 ..< self.elementCount) {
-            switch self.element(at: i, associatedPoints: &points) {
-            case .moveTo:
-                Swift.print("moveTo: (\(points[0].x), \(points[0].y))")
-            case .lineTo:
-                Swift.print("lineTo: (\(points[0].x), \(points[0].y))")
-            case .curveTo:
-                Swift.print("moveTo: (\(points[2].x), \(points[2].y)), (\(points[0].x), \(points[0].y)), (\(points[1].x), \(points[1].y))")
-            case .closePath:
-                Swift.print("close")
-            }
-        }
-    }
 }
+#endif
 
 

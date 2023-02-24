@@ -1,5 +1,5 @@
 //
-//  Int_Extension.swift
+//  Int+Extensions.swift
 //  BooleanPath
 //
 //  Oligin is NSBezierPath+Boolean - Created by Andrew Finnell on 2011/05/31.
@@ -16,10 +16,10 @@ import Foundation
 
 extension Int {
     public var isEven: Bool {
-        return self % 2 == 0
+        return self.isMultiple(of: 2)
     }
     
     public var isOdd: Bool {
-        return self % 2 == 1
+        return !self.isMultiple(of: 2)
     }
 }

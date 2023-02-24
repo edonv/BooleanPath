@@ -569,7 +569,7 @@ class BPBezierContour {
         
         let first = _edges[0]
         if let last = _edges.last {
-            if !BPArePointsClose(first.endPoint1, point2: last.endPoint2) {
+            if !ProximityMath.arePointsClose(first.endPoint1, point2: last.endPoint2) {
                 addCurve(BPBezierCurve(startPoint: last.endPoint2, endPoint: first.endPoint1))
             }
         }

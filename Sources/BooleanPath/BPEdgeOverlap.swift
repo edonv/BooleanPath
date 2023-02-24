@@ -12,8 +12,6 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
-
 let BPOverlapThreshold = isRunningOn64BitDevice ? 1e-2 : 1e-1
 
 class BPEdgeOverlap {

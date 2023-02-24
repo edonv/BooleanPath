@@ -12,74 +12,78 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
+import CoreGraphics
 
-private func BPFindEdge1TangentCurves(_ edge: BPBezierCurve, intersection: BPBezierIntersection) -> (leftCurve: BPBezierCurve, rightCurve: BPBezierCurve) {
-    var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
-    if intersection.isAtStartOfCurve1 {
-        leftCurve = edge.previousNonpoint
-        rightCurve = edge
-    } else if intersection.isAtStopOfCurve1 {
-        leftCurve = edge
-        rightCurve = edge.nextNonpoint
-    } else {
-        leftCurve = intersection.curve1LeftBezier
-        rightCurve = intersection.curve1RightBezier
-    }
-    return (leftCurve: leftCurve, rightCurve: rightCurve)
-}
-
-private func BPFindEdge2TangentCurves(_ edge: BPBezierCurve, intersection: BPBezierIntersection) -> (leftCurve: BPBezierCurve, rightCurve: BPBezierCurve) {
-    var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
+private enum EdgeMath {
+    typealias LRCurvePair = (leftCurve: BPBezierCurve, rightCurve: BPBezierCurve)
     
-    if intersection.isAtStartOfCurve2 {
-        leftCurve = edge.previousNonpoint
-        rightCurve = edge
-    } else if intersection.isAtStopOfCurve2 {
-        leftCurve = edge
-        rightCurve = edge.nextNonpoint
-    } else {
-        leftCurve = intersection.curve2LeftBezier
-        rightCurve = intersection.curve2RightBezier
+    static func findEdge1TangentCurves(_ edge: BPBezierCurve, intersection: BPBezierIntersection) -> LRCurvePair {
+        var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
+        if intersection.isAtStartOfCurve1 {
+            leftCurve = edge.previousNonpoint
+            rightCurve = edge
+        } else if intersection.isAtStopOfCurve1 {
+            leftCurve = edge
+            rightCurve = edge.nextNonpoint
+        } else {
+            leftCurve = intersection.curve1LeftBezier
+            rightCurve = intersection.curve1RightBezier
+        }
+        return (leftCurve: leftCurve, rightCurve: rightCurve)
     }
     
-    return (leftCurve: leftCurve, rightCurve: rightCurve)
-}
-
-private func BPComputeEdgeTangents(_ leftCurve: BPBezierCurve, rightCurve: BPBezierCurve, offset: Double, edgeTangents: inout BPTangentPair) {
-    edgeTangents.left = leftCurve.tangentFromRightOffset(offset)
-    edgeTangents.right = rightCurve.tangentFromLeftOffset(offset)
-}
-
-private func BPComputeEdge1RangeTangentCurves(_ edge: BPBezierCurve, intersectRange: BPBezierIntersectRange) -> (leftCurve: BPBezierCurve, rightCurve: BPBezierCurve) {
-    var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
-    if intersectRange.isAtStartOfCurve1 {
-        leftCurve = edge.previousNonpoint
-    } else {
-        leftCurve = intersectRange.curve1LeftBezier
+    static func findEdge2TangentCurves(_ edge: BPBezierCurve, intersection: BPBezierIntersection) -> LRCurvePair {
+        var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
+        
+        if intersection.isAtStartOfCurve2 {
+            leftCurve = edge.previousNonpoint
+            rightCurve = edge
+        } else if intersection.isAtStopOfCurve2 {
+            leftCurve = edge
+            rightCurve = edge.nextNonpoint
+        } else {
+            leftCurve = intersection.curve2LeftBezier
+            rightCurve = intersection.curve2RightBezier
+        }
+        
+        return (leftCurve: leftCurve, rightCurve: rightCurve)
     }
-    if intersectRange.isAtStopOfCurve1 {
-        rightCurve = edge.nextNonpoint
-    } else {
-        rightCurve = intersectRange.curve1RightBezier
-    }
-    return (leftCurve: leftCurve, rightCurve: rightCurve)
-}
-
-private func BPComputeEdge2RangeTangentCurves(_ edge: BPBezierCurve, intersectRange: BPBezierIntersectRange) -> (leftCurve: BPBezierCurve, rightCurve: BPBezierCurve) {
-    var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
     
-    if intersectRange.isAtStartOfCurve2 {
-        leftCurve = edge.previousNonpoint
-    } else {
-        leftCurve = intersectRange.curve2LeftBezier
+    static func computeEdgeTangents(_ leftCurve: BPBezierCurve, rightCurve: BPBezierCurve, offset: Double, edgeTangents: inout BPTangentPair) {
+        edgeTangents.left = leftCurve.tangentFromRightOffset(offset)
+        edgeTangents.right = rightCurve.tangentFromLeftOffset(offset)
     }
-    if intersectRange.isAtStopOfCurve2 {
-        rightCurve = edge.nextNonpoint
-    } else {
-        rightCurve = intersectRange.curve2RightBezier
+    
+    static func computeEdge1RangeTangentCurves(_ edge: BPBezierCurve, intersectRange: BPBezierIntersectRange) -> LRCurvePair {
+        var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
+        if intersectRange.isAtStartOfCurve1 {
+            leftCurve = edge.previousNonpoint
+        } else {
+            leftCurve = intersectRange.curve1LeftBezier
+        }
+        if intersectRange.isAtStopOfCurve1 {
+            rightCurve = edge.nextNonpoint
+        } else {
+            rightCurve = intersectRange.curve1RightBezier
+        }
+        return (leftCurve: leftCurve, rightCurve: rightCurve)
     }
-    return (leftCurve: leftCurve, rightCurve: rightCurve)
+    
+    static func computeEdge2RangeTangentCurves(_ edge: BPBezierCurve, intersectRange: BPBezierIntersectRange) -> LRCurvePair {
+        var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
+        
+        if intersectRange.isAtStartOfCurve2 {
+            leftCurve = edge.previousNonpoint
+        } else {
+            leftCurve = intersectRange.curve2LeftBezier
+        }
+        if intersectRange.isAtStopOfCurve2 {
+            rightCurve = edge.nextNonpoint
+        } else {
+            rightCurve = intersectRange.curve2RightBezier
+        }
+        return (leftCurve: leftCurve, rightCurve: rightCurve)
+    }
 }
 
 extension BPBezierCurve {
@@ -249,64 +253,59 @@ extension BPBezierCurve {
     }
     
     func crossesEdge(_ edge2: BPBezierCurve, atIntersection intersection: BPBezierIntersection) -> Bool {
-        if intersection.isTangent {
-            return false
-        }
+        // Continue if intersection isn't tangent. If it's tangent, then it can't be true anyway.
+        guard !intersection.isTangent else { return false }
         
-        if !intersection.isAtEndPointOfCurve {
-            return true
-        }
+        // Continue if intersection is at the end point of the curve. If it's not, then it can't be false anyway.
+        guard intersection.isAtEndPointOfCurve else { return true }
         
-        var edge1Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
-        var edge2Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
+        var edge1Tangents = BPTangentPair(left: .zero, right: .zero)
+        var edge2Tangents = BPTangentPair(left: .zero, right: .zero)
         var offset = 0.0
         
-        let (edge1LeftCurve, edge1RightCurve) = BPFindEdge1TangentCurves(self, intersection: intersection)
+        let (edge1LeftCurve, edge1RightCurve) = EdgeMath.findEdge1TangentCurves(self, intersection: intersection)
         let edge1Length = min(edge1LeftCurve.length(), edge1RightCurve.length())
         
-        let (edge2LeftCurve, edge2RightCurve) = BPFindEdge2TangentCurves(edge2, intersection: intersection)
+        let (edge2LeftCurve, edge2RightCurve) = EdgeMath.findEdge2TangentCurves(edge2, intersection: intersection)
         let edge2Length = min(edge2LeftCurve.length(), edge2RightCurve.length())
         
         let maxOffset = min(edge1Length, edge2Length)
         
         repeat {
-            BPComputeEdgeTangents(edge1LeftCurve, rightCurve: edge1RightCurve, offset: offset, edgeTangents: &edge1Tangents)
-            BPComputeEdgeTangents(edge2LeftCurve, rightCurve: edge2RightCurve, offset: offset, edgeTangents: &edge2Tangents)
+            EdgeMath.computeEdgeTangents(edge1LeftCurve, rightCurve: edge1RightCurve, offset: offset, edgeTangents: &edge1Tangents)
+            EdgeMath.computeEdgeTangents(edge2LeftCurve, rightCurve: edge2RightCurve, offset: offset, edgeTangents: &edge2Tangents)
             
             offset += 1.0
-        } while BPAreTangentsAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset
+        } while TangentMath.areAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset
         
-        return BPTangentsCross(edge1Tangents, edge2Tangents: edge2Tangents)
+        return TangentMath.tangentsCross(edge1Tangents, edge2Tangents: edge2Tangents)
     }
     
     func crossesEdge(_ edge2: BPBezierCurve, atIntersectRange intersectRange: BPBezierIntersectRange) -> Bool {
-        
         var edge1Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
         var edge2Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
         var offset = 0.0
         
-        let (edge1LeftCurve, edge1RightCurve) = BPComputeEdge1RangeTangentCurves(self, intersectRange: intersectRange)
+        let (edge1LeftCurve, edge1RightCurve) = EdgeMath.computeEdge1RangeTangentCurves(self, intersectRange: intersectRange)
         
         let edge1Length = min(edge1LeftCurve.length(), edge1RightCurve.length())
         
-        let (edge2LeftCurve, edge2RightCurve) = BPComputeEdge2RangeTangentCurves(edge2, intersectRange: intersectRange)
+        let (edge2LeftCurve, edge2RightCurve) = EdgeMath.computeEdge2RangeTangentCurves(edge2, intersectRange: intersectRange)
         let edge2Length = min(edge2LeftCurve.length(), edge2RightCurve.length())
         
         let maxOffset = min(edge1Length, edge2Length);
         
         repeat {
-            BPComputeEdgeTangents(edge1LeftCurve, rightCurve: edge1RightCurve, offset: offset, edgeTangents: &edge1Tangents)
-            BPComputeEdgeTangents(edge2LeftCurve, rightCurve: edge2RightCurve, offset: offset, edgeTangents: &edge2Tangents)
+            EdgeMath.computeEdgeTangents(edge1LeftCurve, rightCurve: edge1RightCurve, offset: offset, edgeTangents: &edge1Tangents)
+            EdgeMath.computeEdgeTangents(edge2LeftCurve, rightCurve: edge2RightCurve, offset: offset, edgeTangents: &edge2Tangents)
             
             offset += 1.0
-        } while BPAreTangentsAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset
+        } while TangentMath.areAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset
         
-        return BPTangentsCross(edge1Tangents, edge2Tangents: edge2Tangents);
+        return TangentMath.tangentsCross(edge1Tangents, edge2Tangents: edge2Tangents);
     }
     
-    // ===============================
     // MARK: Private funcs
-    // ===============================
     
     fileprivate func sortCrossings() {
         crossings.sort(by: { $0.order < $1.order })

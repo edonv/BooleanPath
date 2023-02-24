@@ -808,14 +808,13 @@ class BPBezierContour {
         }
     }
     
-    // 617
-    //- (NSBezierPath *) debugPathForIntersectionType:(NSInteger)itersectionType
     /// Returns a path consisting of small circles placed at
-    /// the intersections that match <ti>
+    /// the intersections that match.
     ///
     /// This allows the internal state of a contour to be
     /// rapidly visualized so that bugs with boolean ops
     /// are easier to spot at a glance.
+    /// - Returns: A path consisting of small circles placed at the intersections that match.
     private func debugPath<P>(_ path: P,
                               forIntersectionType intersectionType: IntersectionType,
                               appendCircle: (inout P, _ atPoint: CGPoint) -> Void,

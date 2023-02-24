@@ -947,7 +947,7 @@ class BPBezierGraph {
     
     fileprivate func containsContour(_ testContour: BPBezierContour) -> Bool {
         let BPRayOverlap = CGFloat(10.0)
-        if !BPLineBoundsMightOverlap(self.bounds, bounds2: testContour.bounds) {
+        if !TangentMath.lineBoundsMightOverlap(self.bounds, bounds2: testContour.bounds) {
             return false
         }
         
@@ -1065,9 +1065,9 @@ class BPBezierGraph {
                         return (true, true)
                     }
                     
-                    if horizontalRay && BPIsValueLessThan(intersection.location.x, maximum: testMaximum.x) && BPIsValueGreaterThan(intersection.location.x, minimum: testMinimum.x) {
+                    if horizontalRay && ComparisonMath.isValueLessThan(intersection.location.x, maximum: testMaximum.x) && ComparisonMath.isValueGreaterThan(intersection.location.x, minimum: testMinimum.x) {
                         return (false, false)
-                    } else if !horizontalRay && BPIsValueLessThan(intersection.location.y, maximum: testMaximum.y) && BPIsValueGreaterThan(intersection.location.y, minimum: testMinimum.y) {
+                    } else if !horizontalRay && ComparisonMath.isValueLessThan(intersection.location.y, maximum: testMaximum.y) && ComparisonMath.isValueGreaterThan(intersection.location.y, minimum: testMinimum.y) {
                         return (false, false)
                     }
                     
@@ -1079,14 +1079,14 @@ class BPBezierGraph {
                         return (false, false)
                     }
                     
-                    if horizontalRay && BPIsValueLessThanEqual(intersection.location.x, maximum: testMinimum.x) {
+                    if horizontalRay && ComparisonMath.isValueLessThanOrEqual(intersection.location.x, maximum: testMinimum.x) {
                         crossingsBeforeMinimum.append(crossing)
-                    } else if !horizontalRay && BPIsValueLessThanEqual(intersection.location.y, maximum: testMinimum.y) {
+                    } else if !horizontalRay && ComparisonMath.isValueLessThanOrEqual(intersection.location.y, maximum: testMinimum.y) {
                         crossingsBeforeMinimum.append(crossing)
                     }
-                    if horizontalRay && BPIsValueGreaterThanEqual(intersection.location.x, minimum: testMaximum.x) {
+                    if horizontalRay && ComparisonMath.isValueGreaterThanOrEqual(intersection.location.x, minimum: testMaximum.x) {
                         crossingsAfterMaximum.append(crossing)
-                    } else if !horizontalRay && BPIsValueGreaterThanEqual(intersection.location.y, minimum: testMaximum.y) {
+                    } else if !horizontalRay && ComparisonMath.isValueGreaterThanOrEqual(intersection.location.y, minimum: testMaximum.y) {
                         crossingsAfterMaximum.append(crossing)
                     }
                     return (false, false)

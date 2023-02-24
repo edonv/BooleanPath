@@ -96,18 +96,18 @@ class BPEdgeOverlapRun {
             var maxOffset = 0.0
             
             repeat {
-                let length1 = BPComputeEdge1Tangents(firstOverlap, lastOverlap: lastOverlap, offset: offset, edge1Tangents: &edge1Tangents)
-                let length2 = BPComputeEdge2Tangents(firstOverlap, lastOverlap: lastOverlap, offset: offset, edge2Tangents: &edge2Tangents)
+                let length1 = EdgeOverlapMath.computeEdge1Tangents(firstOverlap, lastOverlap: lastOverlap, offset: offset, edge1Tangents: &edge1Tangents)
+                let length2 = EdgeOverlapMath.computeEdge2Tangents(firstOverlap, lastOverlap: lastOverlap, offset: offset, edge2Tangents: &edge2Tangents)
                 maxOffset = min(length1, length2);
                 
                 offset += 1.0
-            } while ( BPAreTangentsAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset);
+            } while ( TangentMath.areAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset);
             
-            if BPTangentsCross(edge1Tangents, edge2Tangents: edge2Tangents) {
+            if TangentMath.tangentsCross(edge1Tangents, edge2Tangents: edge2Tangents) {
                 return true
             }
             var testPoints = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
-            BPComputeEdge1TestPoints(firstOverlap, lastOverlap: lastOverlap, offset: 1.0, testPoints: &testPoints)
+            EdgeOverlapMath.computeEdge1TestPoints(firstOverlap, lastOverlap: lastOverlap, offset: 1.0, testPoints: &testPoints)
             if let contour2 = firstOverlap.edge2.contour {
                 let testPoint1Inside = contour2.containsPoint(testPoints.left)
                 let testPoint2Inside = contour2.containsPoint(testPoints.right)

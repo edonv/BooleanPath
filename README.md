@@ -1,4 +1,4 @@
-# BooleanPath for macOS
+# BooleanPath for macOS and iOS
 Add boolean operations to `Cocoa`'s `NSBezierPath`, `UIKit`'s `UIBezierPath`, and `SwiftUI`'s `Path`.
 
 ## About BooleanPath

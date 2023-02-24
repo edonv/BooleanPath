@@ -144,102 +144,102 @@ class BPEdgeOverlapRun {
     
 }
 
-// =============================
-// MARK: Utility functions
-// =============================
+// MARK: - Edge Overlap Helpers
 
-func BPComputeEdge1Tangents(_ firstOverlap: BPEdgeOverlap,
-                            lastOverlap: BPEdgeOverlap,
-                            offset: Double,
-                            edge1Tangents: inout BPTangentPair) -> Double {
-    var firstLength = 0.0
-    var lastLength = 0.0
-    
-    if firstOverlap.range.isAtStartOfCurve1 {
-        let otherEdge1 = firstOverlap.edge1.previousNonpoint
-        edge1Tangents.left = otherEdge1.tangentFromRightOffset(offset)
-        firstLength = otherEdge1.length()
-    } else {
-        edge1Tangents.left = firstOverlap.range.curve1LeftBezier.tangentFromRightOffset(offset)
-        firstLength = firstOverlap.range.curve1LeftBezier.length()
-    }
-    
-    if lastOverlap.range.isAtStopOfCurve1 {
-        let otherEdge1 = lastOverlap.edge1.nextNonpoint
-        edge1Tangents.right = otherEdge1.tangentFromLeftOffset(offset)
-        lastLength = otherEdge1.length()
-    } else {
-        edge1Tangents.right = lastOverlap.range.curve1RightBezier.tangentFromLeftOffset(offset)
-        lastLength = lastOverlap.range.curve1RightBezier.length()
-    }
-    
-    return min(firstLength, lastLength)
-}
-
-func BPComputeEdge2Tangents(_ firstOverlap: BPEdgeOverlap,
-                            lastOverlap: BPEdgeOverlap,
-                            offset: Double,
-                            edge2Tangents: inout BPTangentPair) -> Double {
-    var firstLength = 0.0
-    var lastLength = 0.0
-    
-    if !firstOverlap.range.reversed {
-        if firstOverlap.range.isAtStartOfCurve2 {
-            let otherEdge2 = firstOverlap.edge2.previousNonpoint
-            edge2Tangents.left = otherEdge2.tangentFromRightOffset(offset)
-            firstLength = otherEdge2.length()
+enum EdgeOverlapMath {
+    static func computeEdge1Tangents(_ firstOverlap: BPEdgeOverlap,
+                                     lastOverlap: BPEdgeOverlap,
+                                     offset: Double,
+                                     edge1Tangents: inout BPTangentPair) -> Double {
+        var firstLength = 0.0
+        var lastLength = 0.0
+        
+        if firstOverlap.range.isAtStartOfCurve1 {
+            let otherEdge1 = firstOverlap.edge1.previousNonpoint
+            edge1Tangents.left = otherEdge1.tangentFromRightOffset(offset)
+            firstLength = otherEdge1.length()
         } else {
-            edge2Tangents.left = firstOverlap.range.curve2LeftBezier.tangentFromRightOffset(offset)
-            firstLength = firstOverlap.range.curve2LeftBezier.length()
+            edge1Tangents.left = firstOverlap.range.curve1LeftBezier.tangentFromRightOffset(offset)
+            firstLength = firstOverlap.range.curve1LeftBezier.length()
         }
         
-        if lastOverlap.range.isAtStopOfCurve2 {
-            let otherEdge2 = lastOverlap.edge2.nextNonpoint
-            edge2Tangents.right = otherEdge2.tangentFromLeftOffset(offset)
-            lastLength = otherEdge2.length()
+        if lastOverlap.range.isAtStopOfCurve1 {
+            let otherEdge1 = lastOverlap.edge1.nextNonpoint
+            edge1Tangents.right = otherEdge1.tangentFromLeftOffset(offset)
+            lastLength = otherEdge1.length()
         } else {
-            edge2Tangents.right = lastOverlap.range.curve2RightBezier.tangentFromLeftOffset(offset)
-            lastLength = lastOverlap.range.curve2RightBezier.length()
+            edge1Tangents.right = lastOverlap.range.curve1RightBezier.tangentFromLeftOffset(offset)
+            lastLength = lastOverlap.range.curve1RightBezier.length()
         }
         
-    } else {
-        if firstOverlap.range.isAtStopOfCurve2 {
-            let otherEdge2 = firstOverlap.edge2.nextNonpoint
-            edge2Tangents.left = otherEdge2.tangentFromLeftOffset(offset)
-            firstLength = otherEdge2.length()
+        return min(firstLength, lastLength)
+    }
+    
+    static func computeEdge2Tangents(_ firstOverlap: BPEdgeOverlap,
+                                     lastOverlap: BPEdgeOverlap,
+                                     offset: Double,
+                                     edge2Tangents: inout BPTangentPair) -> Double {
+        var firstLength = 0.0
+        var lastLength = 0.0
+        
+        if !firstOverlap.range.reversed {
+            if firstOverlap.range.isAtStartOfCurve2 {
+                let otherEdge2 = firstOverlap.edge2.previousNonpoint
+                edge2Tangents.left = otherEdge2.tangentFromRightOffset(offset)
+                firstLength = otherEdge2.length()
+            } else {
+                edge2Tangents.left = firstOverlap.range.curve2LeftBezier.tangentFromRightOffset(offset)
+                firstLength = firstOverlap.range.curve2LeftBezier.length()
+            }
+            
+            if lastOverlap.range.isAtStopOfCurve2 {
+                let otherEdge2 = lastOverlap.edge2.nextNonpoint
+                edge2Tangents.right = otherEdge2.tangentFromLeftOffset(offset)
+                lastLength = otherEdge2.length()
+            } else {
+                edge2Tangents.right = lastOverlap.range.curve2RightBezier.tangentFromLeftOffset(offset)
+                lastLength = lastOverlap.range.curve2RightBezier.length()
+            }
+            
         } else {
-            edge2Tangents.left = firstOverlap.range.curve2RightBezier.tangentFromLeftOffset(offset)
-            firstLength = firstOverlap.range.curve2RightBezier.length()
+            if firstOverlap.range.isAtStopOfCurve2 {
+                let otherEdge2 = firstOverlap.edge2.nextNonpoint
+                edge2Tangents.left = otherEdge2.tangentFromLeftOffset(offset)
+                firstLength = otherEdge2.length()
+            } else {
+                edge2Tangents.left = firstOverlap.range.curve2RightBezier.tangentFromLeftOffset(offset)
+                firstLength = firstOverlap.range.curve2RightBezier.length()
+            }
+            
+            if lastOverlap.range.isAtStartOfCurve2 {
+                let otherEdge2 = lastOverlap.edge2.previousNonpoint
+                edge2Tangents.right = otherEdge2.tangentFromRightOffset(offset)
+                lastLength = otherEdge2.length()
+            } else {
+                edge2Tangents.right = lastOverlap.range.curve2LeftBezier.tangentFromRightOffset(offset)
+                lastLength = lastOverlap.range.curve2LeftBezier.length()
+            }
         }
         
-        if lastOverlap.range.isAtStartOfCurve2 {
-            let otherEdge2 = lastOverlap.edge2.previousNonpoint
-            edge2Tangents.right = otherEdge2.tangentFromRightOffset(offset)
-            lastLength = otherEdge2.length()
+        return min(firstLength, lastLength)
+    }
+    
+    static func computeEdge1TestPoints(_ firstOverlap: BPEdgeOverlap,
+                                       lastOverlap: BPEdgeOverlap,
+                                       offset: Double,
+                                       testPoints: inout BPTangentPair) {
+        if firstOverlap.range.isAtStartOfCurve1 {
+            let otherEdge1 = firstOverlap.edge1.previousNonpoint
+            testPoints.left = otherEdge1.pointFromRightOffset(offset)
         } else {
-            edge2Tangents.right = lastOverlap.range.curve2LeftBezier.tangentFromRightOffset(offset)
-            lastLength = lastOverlap.range.curve2LeftBezier.length()
+            testPoints.left = firstOverlap.range.curve1LeftBezier.pointFromRightOffset(offset)
         }
-    }
-    
-    return min(firstLength, lastLength)
-}
-
-func BPComputeEdge1TestPoints(_ firstOverlap: BPEdgeOverlap,
-                              lastOverlap: BPEdgeOverlap,
-                              offset: Double,
-                              testPoints: inout BPTangentPair) {
-    if firstOverlap.range.isAtStartOfCurve1 {
-        let otherEdge1 = firstOverlap.edge1.previousNonpoint
-        testPoints.left = otherEdge1.pointFromRightOffset(offset)
-    } else {
-        testPoints.left = firstOverlap.range.curve1LeftBezier.pointFromRightOffset(offset)
-    }
-    
-    if lastOverlap.range.isAtStopOfCurve1 {
-        let otherEdge1 = lastOverlap.edge1.nextNonpoint
-        testPoints.right = otherEdge1.pointFromLeftOffset(offset)
-    } else {
-        testPoints.right = lastOverlap.range.curve1RightBezier.pointFromLeftOffset(offset)
+        
+        if lastOverlap.range.isAtStopOfCurve1 {
+            let otherEdge1 = lastOverlap.edge1.nextNonpoint
+            testPoints.right = otherEdge1.pointFromLeftOffset(offset)
+        } else {
+            testPoints.right = lastOverlap.range.curve1RightBezier.pointFromLeftOffset(offset)
+        }
     }
 }

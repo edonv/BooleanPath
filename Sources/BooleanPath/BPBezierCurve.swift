@@ -12,7 +12,8 @@
 //  Copyright © 2019 Takuto Nakamura. All rights reserved.
 //
 
-import Cocoa
+import SwiftUI
+import CoreGraphics
 
 struct BPNormalizedLine {
     var a: Double

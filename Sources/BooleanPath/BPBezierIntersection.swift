@@ -59,6 +59,7 @@ public class BPBezierIntersection {
         _parameter2 = param2
     }
     
+    /// Returns `true` if intersection is tangent.
     public var isTangent: Bool {
         if isAtEndPointOfCurve {
             return false

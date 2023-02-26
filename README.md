@@ -41,3 +41,6 @@ subtractionPath.fill()
 let differencePath: NSBezierPath = rectPath.difference(circlePath)
 differencePath.fill()
 ```
+## Todo's
+
+- [ ] Add documentation from original Swift-VectorBoolean.

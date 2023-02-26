@@ -28,6 +28,9 @@ enum BPContourInside {
     case hole
 }
 
+/// FBBezierContour represents a closed path of bezier curves (aka edges).
+///
+/// Contours can be filled or represent a hole in another contour.
 class BPBezierContour {
     enum BPContourDirection {
         case clockwise
@@ -71,15 +74,23 @@ class BPBezierContour {
         self._inside = .filled
     }
     
-    class func bezierContourWithCurve(_ curve: BPBezierCurve) -> BPBezierContour {
-        let result = BPBezierContour()
-        result.addCurve(curve)
-        return result
-    }
+//    class func bezierContourWithCurve(_ curve: BPBezierCurve) -> BPBezierContour {
+//        let result = BPBezierContour()
+//        result.addCurve(curve)
+//        return result
+//    }
     
+    // Methods for building up the contour.
+    // The reverse forms flip points in the bezier curve
+    // before adding them to the contour.
+    //
+    // The crossing to crossing methods assume the
+    // crossings are on the same edge.
+    // One of the crossings can be nil, but not both.
     func addCurve(_ curve: BPBezierCurve?) {
-        if let curve = curve {
-            curve.contour = self;
+        // Add the curve by wrapping it in an edge
+	    if let curve = curve {
+            curve.contour = self
             curve.index = _edges.count
             _edges.append(curve)
             _bounds = CGRect.null   // force the bounds to be recalculated
@@ -90,34 +101,50 @@ class BPBezierContour {
     }
     
     func addCurveFrom(_ startCrossing: BPEdgeCrossing?, to endCrossing: BPEdgeCrossing?) {
+        // First construct the curve that we're going to add,
+        // by seeing which crossing is nil.
+        // If the crossing isn't given go to the end of the edge on that side.
         var curve: BPBezierCurve?
         
-        if startCrossing == nil, let endCrossing = endCrossing {
+        if startCrossing == nil, let endCrossing {
+            // From start to endCrossing
             curve = endCrossing.leftCurve
-        } else if endCrossing == nil, let startCrossing = startCrossing {
+        } else if endCrossing == nil, let startCrossing {
+            // From startCrossing to end
             curve = startCrossing.rightCurve
-        } else if let startCrossing = startCrossing, let endCrossing = endCrossing {
+        } else if let startCrossing, let endCrossing {
+            // From startCrossing to endCrossing
             curve = startCrossing.curve?.subcurveWithRange(startCrossing.parameter...endCrossing.parameter)
         }
-        if let curve = curve {
+        
+        if let curve {
             addCurve(curve)
         }
     }
     
     func addReverseCurve(_ curve: BPBezierCurve?) {
-        if let curve = curve {
+        // Just reverse the points on the curve.
+        // Need to do this to ensure the end point from one edge
+        // matches the start on the next edge.
+        if let curve {
             addCurve(curve.reversedCurve())
         }
     }
     
     func addReverseCurveFrom(_ startCrossing: BPEdgeCrossing?, to endCrossing: BPEdgeCrossing?) {
+        // First construct the curve that we're going to add,
+        // by seeing which crossing is nil.
+        // If the crossing isn't given go to the end of the edge on that side.
         var curve: BPBezierCurve?
         
-        if startCrossing == nil, let endCrossing = endCrossing {
+        if startCrossing == nil, let endCrossing {
+            // From start to endCrossing
             curve = endCrossing.leftCurve
-        } else if endCrossing == nil, let startCrossing = startCrossing {
+        } else if endCrossing == nil, let startCrossing {
+            // From startCrossing to end
             curve = startCrossing.rightCurve
-        } else if let startCrossing = startCrossing, let endCrossing = endCrossing {
+        } else if let startCrossing, let endCrossing {
+            // From startCrossing to endCrossing
             curve = startCrossing.curve?.subcurveWithRange(startCrossing.parameter...endCrossing.parameter)
         }
         
@@ -131,7 +158,7 @@ class BPBezierContour {
     //- (NSRect) bounds
     var bounds: CGRect {
         // Cache the bounds to save time
-        if !_bounds.equalTo(CGRect.null) {
+        if _bounds != .null {
             return _bounds
         }
         
@@ -162,7 +189,7 @@ class BPBezierContour {
     //- (NSRect) boundingRect
     var boundingRect: CGRect {
         // Cache the boundingRect to save time
-        if !_boundingRect.equalTo(CGRect.null) {
+        if _boundingRect != .null {
             return _boundingRect
         }
         

@@ -318,7 +318,7 @@ class BPBezierGraph {
         return results
     }
     
-    func subtract(with graph: BPBezierGraph) -> BPBezierGraph {
+    func difference(with graph: BPBezierGraph) -> BPBezierGraph {
         insertCrossingsWithBezierGraph(graph)
         self.insertSelfCrossings()
         graph.insertSelfCrossings()
@@ -331,7 +331,7 @@ class BPBezierGraph {
         
         var ourNonintersectingContours = self.nonintersectingContours
         var theirNonintersectinContours = graph.nonintersectingContours
-        var finalNonintersectingContours = subtractEquivalentNonintersectingContours(&ourNonintersectingContours, withContours: &theirNonintersectinContours)
+        var finalNonintersectingContours = differenceEquivalentNonintersectingContours(&ourNonintersectingContours, withContours: &theirNonintersectinContours)
         
         for ourContour in ourNonintersectingContours {
             let clipContainsSubject = graph.containsContour(ourContour)
@@ -358,7 +358,7 @@ class BPBezierGraph {
         return result
     }
     
-    fileprivate func subtractEquivalentNonintersectingContours(_ ourNonintersectingContours: inout [BPBezierContour], withContours theirNonintersectingContours: inout [BPBezierContour]) -> [BPBezierContour] {
+    fileprivate func differenceEquivalentNonintersectingContours(_ ourNonintersectingContours: inout [BPBezierContour], withContours theirNonintersectingContours: inout [BPBezierContour]) -> [BPBezierContour] {
         
         var results: [BPBezierContour] = []
         
@@ -400,7 +400,7 @@ class BPBezierGraph {
     }
     
     // don't use this function
-    func difference(with graph: BPBezierGraph) -> BPBezierGraph {
+    func xor(with graph: BPBezierGraph) -> BPBezierGraph {
         insertCrossingsWithBezierGraph(graph)
         insertSelfCrossings()
         graph.insertSelfCrossings()
@@ -426,7 +426,7 @@ class BPBezierGraph {
         self.removeOverlaps()
         graph.removeOverlaps()
         
-        return allParts.subtract(with: intersectingParts)
+        return allParts.difference(with: intersectingParts)
     }
     
     // MARK: - Computed NSBezierPath

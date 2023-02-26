@@ -56,6 +56,8 @@ private enum EdgeMath {
     
     static func computeEdge1RangeTangentCurves(_ edge: BPBezierCurve, intersectRange: BPBezierIntersectRange) -> LRCurvePair {
         var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
+    // edge1Tangents are firstOverlap.range1.minimum going to previous
+    // and lastOverlap.range1.maximum going to next
         if intersectRange.isAtStartOfCurve1 {
             leftCurve = edge.previousNonpoint
         } else {
@@ -72,6 +74,8 @@ private enum EdgeMath {
     static func computeEdge2RangeTangentCurves(_ edge: BPBezierCurve, intersectRange: BPBezierIntersectRange) -> LRCurvePair {
         var leftCurve: BPBezierCurve, rightCurve: BPBezierCurve
         
+    // edge2Tangents are firstOverlap.range2.minimum going to previous
+    // and lastOverlap.range2.maximum going to next
         if intersectRange.isAtStartOfCurve2 {
             leftCurve = edge.previousNonpoint
         } else {
@@ -87,13 +91,18 @@ private enum EdgeMath {
 }
 
 extension BPBezierCurve {
+    // MARK: Public funcs
     func addCrossing(_ crossing: BPEdgeCrossing) {
+        // Make sure the crossing can make it back to us,
+        // and keep all the crossings sorted
         crossing.edge = self
         crossings.append(crossing)
         sortCrossings()
     }
     
     func removeCrossing(_ crossing: BPEdgeCrossing) {
+        // Keep the crossings sorted
+        //crossing.edge = nil   // cannot nil a non-optional
         for (index, element) in crossings.enumerated() {
             if element === crossing {
                 crossings.remove(at: index)
@@ -129,6 +138,7 @@ extension BPBezierCurve {
         if let contour = contour {
             if contour.edges.count > 0 {
                 if index == 0 {
+                    // wrap to end
                     prev = contour.edges.last!
                 } else {
                     prev = contour.edges[index - 1]
@@ -167,7 +177,7 @@ extension BPBezierCurve {
         }
     }
     
-    func crossingsCopyWithBlock(_ block: (_ crossing: BPEdgeCrossing) -> (setStop: Bool, stopValue:Bool)) {
+    func crossingsCopyWithBlock(_ block: (_ crossing: BPEdgeCrossing) -> (setStop: Bool, stopValue: Bool)) {
         let crossingsCopy = crossings
         for crossing in crossingsCopy {
             let (set, val) = block(crossing)
@@ -197,6 +207,7 @@ extension BPBezierCurve {
         
         crossingsWithBlock() {
             (crossing: BPEdgeCrossing) -> (setStop: Bool, stopValue:Bool) in
+            // Right now skip over self intersecting crossings
             if !crossing.isSelfCrossing {
                 if let crossingCounterpartEdge = crossing.counterpart?.edge {
                     block(crossingCounterpartEdge)
@@ -210,6 +221,7 @@ extension BPBezierCurve {
         crossingsWithBlock() {
             (crossing: BPEdgeCrossing) -> (setStop: Bool, stopValue:Bool) in
             
+            // Only want the self intersecting crossings
             if crossing.isSelfCrossing {
                 if let crossingCounterpartEdge = crossing.counterpart?.edge {
                     block(crossingCounterpartEdge)
@@ -253,12 +265,27 @@ extension BPBezierCurve {
     }
     
     func crossesEdge(_ edge2: BPBezierCurve, atIntersection intersection: BPBezierIntersection) -> Bool {
-        // Continue if intersection isn't tangent. If it's tangent, then it can't be true anyway.
+        // If it's tangent, then it doesn't cross
         guard !intersection.isTangent else { return false }
         
-        // Continue if intersection is at the end point of the curve. If it's not, then it can't be false anyway.
+        // If the intersect happens in the middle of both curves, then it
+        // definitely crosses, so we can just return true.
+        // Most intersections will fall into this category.
         guard intersection.isAtEndPointOfCurve else { return true }
         
+        // The intersection happens at the end of one of the edges, meaning we'll
+        // have to look at the next edge in sequence to see if it crosses or not.
+        // We'll do that by computing the four tangents at the exact point the
+        // intersection takes place.
+        // We'll compute the polar angle for each of the tangents.
+        // If the angles of self split the angles of edge2 (i.e. they alternate when sorted),
+        // then the edges cross.
+        // If any of the angles are equal or if the angles group up,
+        // then the edges don't cross.
+        
+        // Calculate the four tangents:
+        //   The two tangents moving away from the intersection point on self and
+        //   the two tangents moving away from the intersection point on edge2.
         var edge1Tangents = BPTangentPair(left: .zero, right: .zero)
         var edge2Tangents = BPTangentPair(left: .zero, right: .zero)
         var offset = 0.0
@@ -282,6 +309,9 @@ extension BPBezierCurve {
     }
     
     func crossesEdge(_ edge2: BPBezierCurve, atIntersectRange intersectRange: BPBezierIntersectRange) -> Bool {
+        // Calculate the four tangents:
+        // The two tangents moving away from the intersection point on self, and
+        // the two tangents moving away from the intersection point on edge2.
         var edge1Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
         var edge2Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
         var offset = 0.0
@@ -308,6 +338,8 @@ extension BPBezierCurve {
     // MARK: Private funcs
     
     fileprivate func sortCrossings() {
+        // Sort by the "order" of the crossing and then
+        // assign indices so next and previous work correctly.
         crossings.sort(by: { $0.order < $1.order })
         for (index, crossing) in crossings.enumerated() {
             crossing.index = index

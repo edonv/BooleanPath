@@ -261,15 +261,15 @@ enum ComparisonMath {
 //        return range.contains(angle)
         
         if range.lowerBound <= range.upperBound {
-            return ComparisonMath.isValueGreaterThan(angle, minimum: range.minimum) && ComparisonMath.isValueLessThan(angle, maximum: range.maximum)
+            return ComparisonMath.isValueGreaterThan(angle, minimum: range.lowerBound) && ComparisonMath.isValueLessThan(angle, maximum: range.upperBound)
         }
         
         // The range wraps around 0. See if the angle falls in the first half
-        if ComparisonMath.isValueGreaterThan(angle, minimum: range.minimum) && angle <= AngleMath.twoPi {
+        if ComparisonMath.isValueGreaterThan(angle, minimum: range.lowerBound) && angle <= AngleMath.twoPi {
             return true
         }
         
-        return angle >= 0.0 && ComparisonMath.isValueLessThan(angle, maximum: range.maximum)
+        return angle >= 0.0 && ComparisonMath.isValueLessThan(angle, maximum: range.upperBound)
     }
 }
 

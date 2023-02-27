@@ -52,6 +52,8 @@ public class BPBezierIntersectRange {
         return _reversed
     }
     
+    //+ (id) intersectRangeWithCurve1:(FBBezierCurve *)curve1 parameterRange1:(FBRange)parameterRange1 curve2:(FBBezierCurve *)curve2 parameterRange2:(FBRange)parameterRange2 reversed:(BOOL)reversed;
+    // let i = FBBezierIntersectRange(curve1: dvbc1, parameterRange1: pr1, curve2: dvbc2, parameterRange2: pr2, reversed: rvsd)
     init(curve1: BPBezierCurve, parameterRange1: ClosedRange<Double>, curve2: BPBezierCurve, parameterRange2: ClosedRange<Double>, reversed: Bool) {
         _curve1 = curve1
         _parameterRange1 = parameterRange1
@@ -60,52 +62,63 @@ public class BPBezierIntersectRange {
         _reversed = reversed
     }
     
+    //- (FBBezierCurve *) curve1LeftBezier
     var curve1LeftBezier: BPBezierCurve {
         computeCurve1()
         return _curve1LeftBezier!
     }
     
+    //- (FBBezierCurve *) curve1OverlappingBezier
     var curve1OverlappingBezier: BPBezierCurve {
         computeCurve1()
         return _curve1MiddleBezier!
     }
     
+    //- (FBBezierCurve *) curve1RightBezier
     var curve1RightBezier: BPBezierCurve {
         computeCurve1()
         return _curve1RightBezier!
     }
     
+    //- (FBBezierCurve *) curve2LeftBezier
     var curve2LeftBezier: BPBezierCurve {
         computeCurve2()
         return _curve2LeftBezier!
     }
     
+    //- (FBBezierCurve *) curve2OverlappingBezier
     var curve2OverlappingBezier: BPBezierCurve {
         computeCurve2()
         return _curve2MiddleBezier!
     }
     
+    //- (FBBezierCurve *) curve2RightBezier
     var curve2RightBezier: BPBezierCurve {
         computeCurve2()
         return _curve2RightBezier!
     }
     
+    //- (BOOL) isAtStartOfCurve1
     var isAtStartOfCurve1: Bool {
         return ProximityMath.areValuesClose(_parameterRange1.lowerBound, value2: 0.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
+    //- (BOOL) isAtStopOfCurve1
     var isAtStopOfCurve1: Bool {
         return ProximityMath.areValuesClose(_parameterRange1.upperBound, value2: 1.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
+    //- (BOOL) isAtStartOfCurve2
     var isAtStartOfCurve2: Bool {
         return ProximityMath.areValuesClose(_parameterRange2.lowerBound, value2: 0.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
+    //- (BOOL) isAtStopOfCurve2
     var isAtStopOfCurve2: Bool {
         return ProximityMath.areValuesClose(_parameterRange2.upperBound, value2: 1.0, threshold: BPBezierIntersection.parameterCloseThreshold)
     }
     
+    //- (FBBezierIntersection *) middleIntersection
     var middleIntersection: BPBezierIntersection {
         return BPBezierIntersection (
             curve1: _curve1,
@@ -116,6 +129,7 @@ public class BPBezierIntersectRange {
     }
     
     func merge(_ other: BPBezierIntersectRange) {
+        // We assume the caller already knows we're talking about the same curves
         _parameterRange1 = RangeMath.union(_parameterRange1, range2: other._parameterRange1);
         _parameterRange2 = RangeMath.union(_parameterRange2, range2: other._parameterRange2);
         
@@ -134,6 +148,7 @@ public class BPBezierIntersectRange {
         _curve2RightBezier = nil
     }
     
+    //- (void) computeCurve1
     fileprivate func computeCurve1() {
         if needToComputeCurve1 {
             let swr = _curve1.splitSubcurvesWithRange(_parameterRange1, left: true, middle: true, right: true)
@@ -144,6 +159,8 @@ public class BPBezierIntersectRange {
         }
     }
     
+    // 114
+    //- (void) computeCurve2
     fileprivate func computeCurve2() {
         if needToComputeCurve2 {
             let swr = _curve2.splitSubcurvesWithRange(_parameterRange2, left: true, middle: true, right: true)

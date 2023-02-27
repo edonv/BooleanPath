@@ -214,9 +214,9 @@ enum AngleMath {
             }
         } else {
             if point.y > 0.0 {
-                value = Half_π
+                value = halfPi
             } else if point.y < 0.0 {
-                value = -Half_π
+                value = -halfPi
             } else {
                 value = 0.0
             }

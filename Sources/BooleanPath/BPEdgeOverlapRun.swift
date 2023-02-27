@@ -17,38 +17,50 @@ import CoreGraphics
 class BPEdgeOverlapRun {
     var overlaps: [BPEdgeOverlap] = []
     
+    //- (BOOL) insertOverlap:(FBEdgeOverlap *)overlap
     @discardableResult
     func insertOverlap(_ overlap: BPEdgeOverlap) -> Bool {
         if overlaps.count == 0 {
+            // The first one always works
             overlaps.append(overlap)
             return true
         }
+        
+        // Check to see if overlap fits after our last overlap
         if let lastOverlap = overlaps.last {
             if lastOverlap.fitsBefore(overlap) {
                 overlaps.append(overlap)
                 return true
             }
         }
+        
+        // Check to see if overlap fits before our first overlap
         if let firstOverlap = overlaps.first {
             if firstOverlap.fitsAfter(overlap) {
                 overlaps.insert(overlap, at: 0)
                 return true
             }
         }
+        
         return false
     }
     
+    //- (BOOL) isComplete
     var isComplete: Bool {
+        // To be complete, we should wrap around
         if overlaps.count == 0 {
             return false
         }
+        
         if let lastOverlap = overlaps.last {
             let firstOverlap = overlaps[0]
             return lastOverlap.fitsBefore(firstOverlap)
         }
+        
         return false
     }
     
+    //- (BOOL) doesContainCrossing:(FBEdgeCrossing *)crossing
     func doesContainCrossing(_ crossing: BPEdgeCrossing) -> Bool {
         if let crossingEdge = crossing.edge {
             return doesContainParameter(crossing.parameter, onEdge: crossingEdge)
@@ -57,10 +69,13 @@ class BPEdgeOverlapRun {
         }
     }
     
+    //- (BOOL) doesContainParameter:(CGFloat)parameter onEdge:(FBBezierCurve *)edge
     func doesContainParameter(_ parameter: Double, onEdge edge: BPBezierCurve) -> Bool {
         if overlaps.count == 0 {
             return false
         }
+        
+        // Find the FBEdgeOverlap that contains the crossing (if it exists)
         var containingOverlap: BPEdgeOverlap?
         for overlap in overlaps {
             if overlap.edge1 == edge || overlap.edge2 == edge {
@@ -69,6 +84,7 @@ class BPEdgeOverlapRun {
             }
         }
         
+        // The edge it's attached to isn't here
         if let containingOverlap = containingOverlap {
             
             let lastOverlap = overlaps.last
@@ -86,7 +102,26 @@ class BPEdgeOverlapRun {
         }
     }
     
+    //- (BOOL) isCrossing
     var isCrossing: Bool {
+        // The intersection happens at the end of one of the edges,
+        // meaning we'll have to look at the next edge in sequence
+        // to see if it crosses or not.
+        //
+        // We'll do that by computing the four tangents at the exact
+        // point the intersection takes place.
+        //
+        // We'll compute the polar angle for each of the tangents.
+        // If the angles of self split the angles of edge2
+        // (i.e. they alternate when sorted), then the edges cross.
+        //
+        // If any of the angles are equal or if the angles group up,
+        // then the edges don't cross.
+        
+        // Calculate the four tangents:
+        //   The two tangents moving away from the intersection point on self,
+        //   the two tangents moving away from the intersection point on edge2.
+        
         let firstOverlap = overlaps[0]
         if let lastOverlap = overlaps.last {
             var edge1Tangents = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
@@ -101,11 +136,15 @@ class BPEdgeOverlapRun {
                 maxOffset = min(length1, length2);
                 
                 offset += 1.0
-            } while ( TangentMath.areAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset);
+            } while (TangentMath.areAmbigious(edge1Tangents, edge2Tangents: edge2Tangents) && offset < maxOffset)
             
             if TangentMath.tangentsCross(edge1Tangents, edge2Tangents: edge2Tangents) {
                 return true
             }
+            
+            // Tangents work, mostly, for overlaps. If we get a yes, it's solid.
+            // If we get a no, it might still be a crossing.
+            // Only way to tell now is to perform an actual point test
             var testPoints = BPTangentPair(left: CGPoint.zero, right: CGPoint.zero)
             EdgeOverlapMath.computeEdge1TestPoints(firstOverlap, lastOverlap: lastOverlap, offset: 1.0, testPoints: &testPoints)
             if let contour2 = firstOverlap.edge2.contour {
@@ -114,10 +153,14 @@ class BPEdgeOverlapRun {
                 return testPoint1Inside != testPoint2Inside
             }
         }
+        
         return false
     }
     
+    //- (void) addCrossings
     func addCrossings() {
+        // Add crossings to both graphs for this intersection/overlap.
+        // Pick the middle point and use that
         if overlaps.count == 0 {
             return
         }
@@ -126,19 +169,25 @@ class BPEdgeOverlapRun {
         middleOverlap.addMiddleCrossing()
     }
     
+    //- (FBBezierContour *) contour1
     var contour1: BPBezierContour? {
         if overlaps.count == 0 {
             return nil
         }
+        
         let overlap = overlaps[0]
+        
         return overlap.edge1.contour
     }
     
+    //- (FBBezierContour *) contour2
     var contour2: BPBezierContour? {
         if overlaps.count == 0 {
             return nil
         }
+        
         let overlap = overlaps[0]
+        
         return overlap.edge2.contour
     }
     
@@ -147,10 +196,14 @@ class BPEdgeOverlapRun {
 // MARK: - Edge Overlap Helpers
 
 enum EdgeOverlapMath {
+    //static CGFloat FBComputeEdge1Tangents(FBEdgeOverlap *firstOverlap, FBEdgeOverlap *lastOverlap, CGFloat offset, NSPoint edge1Tangents[2])
     static func computeEdge1Tangents(_ firstOverlap: BPEdgeOverlap,
                                      lastOverlap: BPEdgeOverlap,
                                      offset: Double,
                                      edge1Tangents: inout BPTangentPair) -> Double {
+        // edge1Tangents are firstOverlap.range1.minimum going to previous
+        // and lastOverlap.range1.maximum going to next
+        
         var firstLength = 0.0
         var lastLength = 0.0
         
@@ -175,10 +228,17 @@ enum EdgeOverlapMath {
         return min(firstLength, lastLength)
     }
     
+    //static CGFloat FBComputeEdge2Tangents(FBEdgeOverlap *firstOverlap, FBEdgeOverlap *lastOverlap, CGFloat offset, NSPoint edge2Tangents[2])
     static func computeEdge2Tangents(_ firstOverlap: BPEdgeOverlap,
                                      lastOverlap: BPEdgeOverlap,
                                      offset: Double,
                                      edge2Tangents: inout BPTangentPair) -> Double {
+        // edge2Tangents are firstOverlap.range2.minimum going to previous
+        // and lastOverlap.range2.maximum going to next
+        //  unless reversed, then
+        // edge2Tangents are firstOverlap.range2.maximum going to next
+        // and lastOverlap.range2.minimum going to previous
+        
         var firstLength = 0.0
         var lastLength = 0.0
         
@@ -224,10 +284,14 @@ enum EdgeOverlapMath {
         return min(firstLength, lastLength)
     }
     
+    //static void FBComputeEdge1TestPoints(FBEdgeOverlap *firstOverlap, FBEdgeOverlap *lastOverlap, CGFloat offset, NSPoint testPoints[2])
     static func computeEdge1TestPoints(_ firstOverlap: BPEdgeOverlap,
                                        lastOverlap: BPEdgeOverlap,
                                        offset: Double,
                                        testPoints: inout BPTangentPair) {
+        // edge1Tangents are firstOverlap.range1.minimum going to previous
+        // and lastOverlap.range1.maximum going to next
+        
         if firstOverlap.range.isAtStartOfCurve1 {
             let otherEdge1 = firstOverlap.edge1.previousNonpoint
             testPoints.left = otherEdge1.pointFromRightOffset(offset)

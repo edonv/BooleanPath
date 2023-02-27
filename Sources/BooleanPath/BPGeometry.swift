@@ -115,8 +115,8 @@ enum PointMath {
     }
     
     static func lineNormal(_ lineStart: CGPoint, lineEnd: CGPoint) -> CGPoint {
-        return normalizePoint(CGPoint(x: lineStart.y - lineEnd.y,
-                                        y: lineEnd.x - lineStart.x))
+        return normalizePoint(CGPoint(x: lineStart.y - lineEnd.y, // -(lineEnd.y - lineStart.y)
+                                      y: lineEnd.x - lineStart.x))
     }
     
     static func lineMidpoint(_ lineStart: CGPoint, lineEnd: CGPoint) -> CGPoint {
@@ -183,11 +183,13 @@ enum ProximityMath {
 
 // MARK: - Angle Helpers
 
+/// Helper methods for angles.
 enum AngleMath {
     static let twoPi = 2.0 * Double.pi
     static let pi = Double.pi
     static let halfPi = Double.pi / 2
     
+    // Normalize the angle between 0 and 2 π
     static func normalizeAngle(_ value: Double) -> Double {
         var value = value
         while value < 0.0 {  value = value + twoPi }
@@ -196,6 +198,7 @@ enum AngleMath {
         return value
     }
     
+    // Compute the polar angle from the cartesian point
     static func polarAngle(_ point: CGPoint) -> Double {
         var value = 0.0
         let dpx = Double(point.x)
@@ -203,8 +206,7 @@ enum AngleMath {
         
         if point.x > 0.0 {
             value = atan(dpy / dpx)
-        }
-        else if point.x < 0.0 {
+        } else if point.x < 0.0 {
             if point.y >= 0.0 {
                 value = atan(dpy / dpx) + pi
             } else {
@@ -212,12 +214,10 @@ enum AngleMath {
             }
         } else {
             if point.y > 0.0 {
-                value =  halfPi
-            }
-            else if point.y < 0.0 {
-                value =  -halfPi
-            }
-            else {
+                value = Half_π
+            } else if point.y < 0.0 {
+                value = -Half_π
+            } else {
                 value = 0.0
             }
         }
@@ -314,10 +314,8 @@ struct BPAnglePair {
 
 enum TangentMath {
     static func areAmbigious(_ edge1Tangents: BPTangentPair, edge2Tangents: BPTangentPair) -> Bool {
-        let normalEdge1 = BPTangentPair(left: PointMath.normalizePoint(edge1Tangents.left),
-                                        right: PointMath.normalizePoint(edge1Tangents.right))
-        let normalEdge2 = BPTangentPair(left: PointMath.normalizePoint(edge2Tangents.left),
-                                        right: PointMath.normalizePoint(edge2Tangents.right))
+        let normalEdge1 = BPTangentPair(left: PointMath.normalizePoint(edge1Tangents.left), right: PointMath.normalizePoint(edge1Tangents.right))
+        let normalEdge2 = BPTangentPair(left: PointMath.normalizePoint(edge2Tangents.left), right: PointMath.normalizePoint(edge2Tangents.right))
         
         return ProximityMath.arePointsClose(normalEdge1.left,
                                             point2: normalEdge2.left,
@@ -337,9 +335,11 @@ enum TangentMath {
     }
     
     static func tangentsCross(_ edge1Tangents: BPTangentPair, edge2Tangents: BPTangentPair) -> Bool {
+        // Calculate angles for the tangents
         let edge1Angles = BPAnglePair(a: AngleMath.polarAngle(edge1Tangents.left), b: AngleMath.polarAngle(edge1Tangents.right))
         let edge2Angles = BPAnglePair(a: AngleMath.polarAngle(edge2Tangents.left), b: AngleMath.polarAngle(edge2Tangents.right))
         
+        // Count how many times edge2 angles appear between the self angles
         let range1 = edge1Angles.a...edge1Angles.b // AngleRange(minimum: edge1Angles.a, maximum: edge1Angles.b)
         var rangeCount1 = 0
         
@@ -350,6 +350,7 @@ enum TangentMath {
             rangeCount1 += 1
         }
         
+        // Count how many times self angles appear between the edge2 angles
         let range2 = edge1Angles.b...edge1Angles.a // AngleRange(minimum: edge1Angles.b, maximum: edge1Angles.a)
         var rangeCount2 = 0
         
@@ -360,6 +361,7 @@ enum TangentMath {
             rangeCount2 += 1
         }
         
+        // If each pair of angles split the other two, then the edges cross.
         return rangeCount1 == 1 && rangeCount2 == 1
     }
     

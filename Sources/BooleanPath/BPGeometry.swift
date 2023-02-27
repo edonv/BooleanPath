@@ -258,14 +258,18 @@ enum ComparisonMath {
     }
     
     static func angleRangeContainsAngle(_ range: ClosedRange<Double>, angle: Double) -> Bool {
-        return range.contains(angle)
-        //    if range.lowerBound <= range.upperBound {
-        //        return ComparisonMath.isValueGreaterThan(angle, minimum: range.minimum) && ComparisonMath.isValueLessThan(angle, maximum: range.maximum)
-        //    }
-        //    if ComparisonMath.isValueGreaterThan(angle, minimum: range.minimum) && angle <= AngleMath.twoPi {
-        //        return true
-        //    }
-        //    return angle >= 0.0 && ComparisonMath.isValueLessThan(angle, maximum: range.maximum)
+//        return range.contains(angle)
+        
+        if range.lowerBound <= range.upperBound {
+            return ComparisonMath.isValueGreaterThan(angle, minimum: range.minimum) && ComparisonMath.isValueLessThan(angle, maximum: range.maximum)
+        }
+        
+        // The range wraps around 0. See if the angle falls in the first half
+        if ComparisonMath.isValueGreaterThan(angle, minimum: range.minimum) && angle <= AngleMath.twoPi {
+            return true
+        }
+        
+        return angle >= 0.0 && ComparisonMath.isValueLessThan(angle, maximum: range.maximum)
     }
 }
 

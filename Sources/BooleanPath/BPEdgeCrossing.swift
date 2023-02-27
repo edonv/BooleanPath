@@ -52,33 +52,25 @@ class BPEdgeCrossing {
     }
     
     var next: BPEdgeCrossing? {
-        if let edge = edge {
-            return edge.nextCrossing(self)
-        } else {
-            return nil
-        }
+        edge?.nextCrossing(self)
     }
     
     var previous: BPEdgeCrossing? {
-        if let edge = edge {
-            return edge.previousCrossing(self)
-        } else {
-            return nil
-        }
+        edge?.previousCrossing(self)
     }
     
     var nextNonself: BPEdgeCrossing? {
-        var nextNon: BPEdgeCrossing? = next
-        while nextNon != nil && nextNon!.isSelfCrossing {
-            nextNon = nextNon!.next
+        var nextNon = next
+        while let n = nextNon, n.isSelfCrossing {
+            nextNon = n.next
         }
         return nextNon
     }
     
     var previousNonself: BPEdgeCrossing? {
-        var prevNon: BPEdgeCrossing? = previous
-        while prevNon != nil && prevNon!.isSelfCrossing {
-            prevNon = prevNon!.previous
+        var prevNon = previous
+        while let p = prevNon, p.isSelfCrossing {
+            prevNon = p.previous
         }
         return prevNon
     }
@@ -100,9 +92,8 @@ class BPEdgeCrossing {
     }
     
     var leftCurve: BPBezierCurve? {
-        if isAtStart {
-            return nil
-        }
+        guard !isAtStart else { return nil }
+        
         if edge == _intersection.curve1 {
             return _intersection.curve1LeftBezier
         } else {
@@ -111,9 +102,8 @@ class BPEdgeCrossing {
     }
     
     var rightCurve: BPBezierCurve? {
-        if isAtEnd {
-            return nil
-        }
+        guard !isAtEnd else { return nil }
+        
         if edge == _intersection.curve1 {
             return _intersection.curve1RightBezier
         } else {

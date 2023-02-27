@@ -14,7 +14,7 @@
 
 import Foundation
 
-// Legendre-Gauss
+/// Legendre-Gauss abscissae (xi values, defined at i=n as the roots of the nth order Legendre polynomial Pn(x))
 let BPLegendreGaussAbscissaeValues: [[Double]] = [
     [], [],
     

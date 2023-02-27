@@ -14,6 +14,11 @@
 
 import CoreGraphics
 
+/// FBEdgeCrossing is used by the boolean operations code to hold data about
+/// where two edges actually cross (as opposed to just intersect).
+///
+/// The main piece of data is the intersection, but it also holds a pointer to the
+/// crossing's counterpart in the other FBBezierGraph
 class BPEdgeCrossing {
     fileprivate var _intersection: BPBezierIntersection
     
@@ -25,6 +30,7 @@ class BPEdgeCrossing {
     var selfCrossing = false
     var index: Int = 0
     
+    //+ (id) crossingWithIntersection:(FBBezierIntersection *)intersection
     init(intersection: BPBezierIntersection) {
         _intersection = intersection
     }
@@ -41,24 +47,29 @@ class BPEdgeCrossing {
         return entry
     }
     
+    //- (void) removeFromEdge
     func removeFromEdge() {
         if let edge = edge {
             edge.removeCrossing(self)
         }
     }
     
+    //- (CGFloat) order
     var order: Double {
         return parameter
     }
     
+    //- (FBEdgeCrossing *) next
     var next: BPEdgeCrossing? {
         edge?.nextCrossing(self)
     }
     
+    //- (FBEdgeCrossing *) previous
     var previous: BPEdgeCrossing? {
         edge?.previousCrossing(self)
     }
     
+    //- (FBEdgeCrossing *) nextNonself
     var nextNonself: BPEdgeCrossing? {
         var nextNon = next
         while let n = nextNon, n.isSelfCrossing {
@@ -67,6 +78,7 @@ class BPEdgeCrossing {
         return nextNon
     }
     
+    //- (FBEdgeCrossing *) previousNonself
     var previousNonself: BPEdgeCrossing? {
         var prevNon = previous
         while let p = prevNon, p.isSelfCrossing {
@@ -75,6 +87,9 @@ class BPEdgeCrossing {
         return prevNon
     }
     
+    // MARK: Underlying Intersection Access
+    // These properties pass through to the underlying intersection
+    //- (CGFloat) parameter
     var parameter: Double {
         if edge == _intersection.curve1 {
             return _intersection.parameter1
@@ -83,14 +98,17 @@ class BPEdgeCrossing {
         }
     }
     
+    //- (NSPoint) location
     var location: CGPoint {
         return _intersection.location
     }
     
+    //- (FBBezierCurve *) curve
     var curve: BPBezierCurve? {
         return edge
     }
     
+    //- (FBBezierCurve *) leftCurve
     var leftCurve: BPBezierCurve? {
         guard !isAtStart else { return nil }
         
@@ -101,6 +119,7 @@ class BPEdgeCrossing {
         }
     }
     
+    //- (FBBezierCurve *) rightCurve
     var rightCurve: BPBezierCurve? {
         guard !isAtEnd else { return nil }
         
@@ -111,6 +130,7 @@ class BPEdgeCrossing {
         }
     }
     
+    //- (BOOL) isAtStart
     var isAtStart: Bool {
         if edge == _intersection.curve1 {
             return _intersection.isAtStartOfCurve1
@@ -119,6 +139,7 @@ class BPEdgeCrossing {
         }
     }
     
+    //- (BOOL) isAtEnd
     var isAtEnd: Bool {
         if edge == _intersection.curve1 {
             return _intersection.isAtStopOfCurve1

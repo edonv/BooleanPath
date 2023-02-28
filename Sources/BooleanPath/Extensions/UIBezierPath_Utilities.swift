@@ -57,6 +57,8 @@ public extension UIBezierPath {
         }
     }
     
+    // 57
+    //- (void) fb_copyAttributesFrom:(NSBezierPath *)path
     func copyAttributesFrom(_ path: UIBezierPath) {
         self.lineWidth = path.lineWidth
         self.lineCapStyle = path.lineCapStyle
@@ -86,6 +88,8 @@ public extension UIBezierPath {
 // MARK: - Static Func Inits for Debugging
 
 public extension UIBezierPath {
+    // 103
+    //+ (NSBezierPath *) circleAtPoint:(NSPoint)point
     static func circleAtPoint(_ point: CGPoint) -> UIBezierPath {
         let rect = CGRect(
             x: point.x - BPDebugPointSize * 0.5,
@@ -95,6 +99,8 @@ public extension UIBezierPath {
         return UIBezierPath(ovalIn: rect)
     }
     
+    // 110
+    //+ (NSBezierPath *) rectAtPoint:(NSPoint)point
     static func rectAtPoint(_ point: CGPoint) -> UIBezierPath {
         let rect = CGRect(
             x: point.x - BPDebugPointSize * 0.5,
@@ -104,6 +110,7 @@ public extension UIBezierPath {
         return UIBezierPath(rect: rect)
     }
     
+    // 117
     static func smallCircleAtPoint(_ point: CGPoint) -> UIBezierPath {
         let rect = CGRect(
             x: point.x - BPDebugSmallPointSize * 0.5,
@@ -113,6 +120,8 @@ public extension UIBezierPath {
         return UIBezierPath(ovalIn: rect)
     }
     
+    // 124
+    //+ (NSBezierPath *) smallRectAtPoint:(NSPoint)point
     static func smallRectAtPoint(_ point: CGPoint) -> UIBezierPath {
         let rect = CGRect(
             x: point.x - BPDebugSmallPointSize * 0.5,
@@ -122,6 +131,8 @@ public extension UIBezierPath {
         return UIBezierPath(rect: rect)
     }
     
+    // 131
+    //+ (NSBezierPath *) triangleAtPoint:(NSPoint)point direction:(NSPoint)tangent
     static func triangleAtPoint(_ point: CGPoint, direction tangent: CGPoint) -> UIBezierPath {
         let endPoint = PointMath.addPoint(point, point2: PointMath.scalePoint(tangent, scale: BPDebugPointSize * 1.5))
         let normal1 = PointMath.lineNormal(point, lineEnd: endPoint)
@@ -134,6 +145,7 @@ public extension UIBezierPath {
         path.addLine(to: basePoint2)
         path.addLine(to: basePoint1)
         path.close()
+        
         return path
     }
 

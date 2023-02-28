@@ -15,10 +15,14 @@
 import Foundation
 
 extension Int {
+    /// Our utility extension to ease identification
+    /// of places where we test for even numbers
     public var isEven: Bool {
         return self.isMultiple(of: 2)
     }
     
+    /// Our utility extension to ease identification
+    /// of places where we test for odd numbers
     public var isOdd: Bool {
         return !self.isMultiple(of: 2)
     }

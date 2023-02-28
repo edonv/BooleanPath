@@ -16,6 +16,8 @@
 import UIKit
 
 public extension UIBezierPath {
+    // 15
+    //- (NSBezierPath *) fb_union:(NSBezierPath *)path
     func union(_ path: UIBezierPath) -> UIBezierPath {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
@@ -24,6 +26,8 @@ public extension UIBezierPath {
         return result
     }
     
+    // 24
+    //- (NSBezierPath *) fb_intersect:(NSBezierPath *)path
     func intersection(_ path: UIBezierPath) -> UIBezierPath {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
@@ -32,6 +36,8 @@ public extension UIBezierPath {
         return result
     }
     
+    // 33
+    //- (NSBezierPath *) fb_difference:(NSBezierPath *)path
     func difference(_ path: UIBezierPath) -> UIBezierPath {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
@@ -40,6 +46,8 @@ public extension UIBezierPath {
         return result
     }
     
+    // 42
+    //- (NSBezierPath *) fb_xor:(NSBezierPath *)path
     func xor(_ path: UIBezierPath) -> UIBezierPath {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)

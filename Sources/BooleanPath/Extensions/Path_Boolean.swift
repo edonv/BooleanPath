@@ -15,6 +15,8 @@
 import SwiftUI
 
 public extension Path {
+    // 15
+    //- (NSBezierPath *) fb_union:(NSBezierPath *)path
     func union(_ path: Path) -> Path {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
@@ -23,6 +25,8 @@ public extension Path {
         return result
     }
     
+    // 24
+    //- (NSBezierPath *) fb_intersect:(NSBezierPath *)path
     func intersection(_ path: Path) -> Path {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
@@ -31,6 +35,8 @@ public extension Path {
         return result
     }
     
+    // 33
+    //- (NSBezierPath *) fb_difference:(NSBezierPath *)path
     func difference(_ path: Path) -> Path {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
@@ -39,6 +45,8 @@ public extension Path {
         return result
     }
     
+    // 42
+    //- (NSBezierPath *) fb_xor:(NSBezierPath *)path
     func xor(_ path: Path) -> Path {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)

@@ -31,7 +31,7 @@ public extension Path {
         return result
     }
     
-    func subtraction(_ path: Path) -> Path {
+    func difference(_ path: Path) -> Path {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
         let result = thisGraph.difference(with: otherGraph).path
@@ -39,12 +39,10 @@ public extension Path {
         return result
     }
     
-    func difference(_ path: Path) -> Path {
+    func xor(_ path: Path) -> Path {
         let thisGraph = BPBezierGraph(path: self)
         let otherGraph = BPBezierGraph(path: path)
-        var result = Path()
-        result.addPath(thisGraph.difference(with: otherGraph).path)
-        result.addPath(otherGraph.difference(with: thisGraph).path)
+        let result = thisGraph.xor(with: otherGraph).path
 //        result.copyAttributesFrom(self)
         return result
     }

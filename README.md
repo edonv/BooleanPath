@@ -33,13 +33,13 @@ unionPath.fill()
 let intersectionPath: NSBezierPath = rectPath.intersection(circlePath)
 intersectionPath.fill()
         
-// Subtraction
-let subtractionPath: NSBezierPath = rectPath.subtraction(circlePath)
-subtractionPath.fill()
-        
 // Difference
 let differencePath: NSBezierPath = rectPath.difference(circlePath)
 differencePath.fill()
+        
+// X_Or
+let xorPath: NSBezierPath = rectPath.xor(circlePath)
+xorPath.fill()
 ```
 ## Todo's
 

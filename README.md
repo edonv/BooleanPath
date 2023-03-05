@@ -1,3 +1,7 @@
+# *Disclaimer!!*
+This was meant as a way to update the original package to a Swift Package and add compatability with `UIBezierPath` and `SwiftUI`'s `Path`. After my initial reorganizing of the codebase, it isn't working. I've decided not to spend more time on this, as Swift has added boolean functions to [CGPath](https://developer.apple.com/documentation/coregraphics/cgpath) [here](https://developer.apple.com/documentation/coregraphics/cgpath#2874290) for iOS 16+/macOS 13+. Meanwhile, the *original* original library works with minimal work [found here](https://github.com/edonv/VectorBoolean/blob/master/README.md) (it works as a Swift Package). Feel free to use or fork either library as you'd like.
+
+
 # BooleanPath for macOS and iOS
 Add boolean operations to `Cocoa`'s `NSBezierPath`, `UIKit`'s `UIBezierPath`, and `SwiftUI`'s `Path`.
 
@@ -43,4 +47,4 @@ xorPath.fill()
 ```
 ## Todo's
 
-- [ ] Add documentation from original Swift-VectorBoolean.
+- [ ] ~~Add documentation from original Swift-VectorBoolean.~~
